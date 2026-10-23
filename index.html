@@ -9564,7 +9564,7 @@ function renderWardrobe(){
   var who=$('wwho');who.innerHTML='';
   [['me','Karakterim'],['helper','Küçük yardımcım']].forEach(function(w){
     var b=document.createElement('button');b.type='button';b.className='tab';b.textContent=w[1];b.setAttribute('aria-selected',TGT===w[0]?'true':'false');
-    b.addEventListener('click',function(){TGT=w[0];refreshPreview();renderWardrobe();});who.appendChild(b);
+    b.addEventListener('click',function(){TGT=w[0];if(TGT==='me'&&LOOK.eq.outfit==='ph_haydut'){LOOK.eq.outfit='';refreshAll();}else{refreshPreview();renderWardrobe();}});who.appendChild(b);
   });
   [['haydut','🧑 Haydut (3B)']].forEach(function(w){var b=document.createElement('button');b.type='button';b.className='tab';b.textContent=w[1];b.addEventListener('click',function(){applyModelChar(w[0]);});who.appendChild(b);});
   if(!$('wcredit')){var cr=document.createElement('div');cr.id='wcredit';cr.style.cssText='font-size:11px;opacity:.7;margin:6px 0;line-height:1.4';who.parentNode.insertBefore(cr,who.nextSibling);}
