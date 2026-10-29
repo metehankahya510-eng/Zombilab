@@ -78,6 +78,9 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
 .tb{position:absolute;pointer-events:auto;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.4);color:#fff;font-weight:700;font-family:inherit}
 #bFire{right:28px;bottom:calc(190px + var(--si-b));width:104px;height:104px;background:rgba(215,38,61,.55);font-size:1rem}
 #bJump{right:150px;bottom:calc(250px + var(--si-b));width:70px;height:70px;font-size:.7rem}
+#bRunLock{left:calc(28px + env(safe-area-inset-left,0px));bottom:calc(240px + var(--si-b));width:140px;height:46px;border-radius:23px;font-size:.8rem;background:rgba(124,255,79,.35)}
+#bGren{right:230px;bottom:calc(170px + var(--si-b));width:70px;height:70px;font-size:1.3rem;background:rgba(255,160,40,.45)}
+#bSlide{right:230px;bottom:calc(250px + var(--si-b));width:70px;height:70px;font-size:.75rem;background:rgba(53,198,255,.45)}
 #bReload{right:150px;bottom:calc(170px + var(--si-b));width:70px;height:70px;font-size:.7rem}
 #wlist{pointer-events:auto}
 .touch #wlist span{padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.45)}
@@ -121,7 +124,7 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
 .wnote{margin-top:10px;color:var(--muted);font-size:.85rem}
 @media (max-width:900px){.mgrid{grid-template-columns:1fr}#stage{order:-1;min-height:42vh}.mgrid .card{max-height:none}}
 #crateBtn{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(12px + var(--si-t));z-index:30;padding:9px 15px;border-radius:12px;border:2px solid var(--toxic);background:rgba(10,13,17,.88);color:var(--toxic);font:inherit;font-weight:700;font-size:1.05rem}
-#crates,#admin,#maps{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:14px}
+#crates,#admin,#maps,#modes,#armory,#settings,#records{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:14px}
 .cbox{width:min(460px,100%);max-height:100%;overflow:auto;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px}
 #crateList{display:grid;gap:8px}
 .crt{display:grid;gap:2px;text-align:left;padding:12px;border-radius:12px;border:3px solid;background:#161c23;color:var(--ink);font:inherit}
@@ -149,7 +152,7 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
 .boot{margin:0 0 10px;padding:8px 10px;border:2px solid var(--blood);border-radius:10px;color:#ffb3b3;font-size:.9rem}
 @media (prefers-reduced-motion:reduce){#dhint{animation:none}}
 .mbox{width:min(600px,100%)}
-#mapList{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+#mapList,#modeList,#armList,#perkList{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 .mcard{display:grid;gap:4px;text-align:left;padding:12px;border-radius:12px;border:3px solid var(--line);background:#161c23;color:var(--ink);font:inherit;touch-action:manipulation}
 .mcard b{font-size:1.05rem}.mcard small{color:var(--muted)}.mcard.sel{border-color:var(--toxic)}
 @media (prefers-reduced-motion:reduce){#hpFill,#dmgV,#hitm{transition:none}}
@@ -177,6 +180,12 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
     <button class="si" id="shW1" type="button"></button>
     <button class="si" id="shW2" type="button"></button>
     <button class="si" id="shW3" type="button"></button>
+    <button class="si" id="shW4" type="button"></button>
+    <button class="si" id="shW5" type="button"></button>
+    <button class="si" id="shW6" type="button"></button>
+    <button class="si" id="shW7" type="button"></button>
+    <button class="si" id="shW8" type="button"></button>
+    <button class="si" id="shW9" type="button"></button>
     <button class="si" id="shClose" type="button">Kapat</button>
   </div>
   <div id="dmgV"></div>
@@ -193,6 +202,9 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
     <button class="tb" id="bFire" type="button">ATEŞ</button>
     <button class="tb" id="bJump" type="button">ZIPLA</button>
     <button class="tb" id="bReload" type="button">ŞARJÖR</button>
+    <button class="tb" id="bSlide" type="button">KAY</button>
+    <button class="tb" id="bGren" type="button">💣</button>
+    <button class="tb" id="bRunLock" type="button" hidden>🔒 KİLİDİ AÇ</button>
     <button class="tb" id="bUse" type="button" hidden>BUTON</button>
   </div>
 </div>
@@ -232,6 +244,44 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
       <button class="btn" id="mapClose" type="button">Kapat</button>
     </div>
   </div>
+  <div id="armory" hidden role="dialog" aria-label="Silah deposu">
+    <div class="cbox mbox" style="max-height:92vh;overflow:auto">
+      <div class="wtop"><b>🔫 Silah Deposu</b></div>
+      <div class="wnote">Başlangıç silahı: oyuna bununla başlarsın (en fazla 900 TL'lik silahlar bedava; güçlüleri oyunda satın alırsın).</div>
+      <div id="armList"></div>
+      <div class="wtop" style="margin-top:10px"><b>Yetenek (bir tane seç)</b></div>
+      <div id="perkList"></div>
+      <button class="btn" id="armClose" type="button" style="margin-top:10px">Kapat</button>
+    </div>
+  </div>
+  <div id="settings" hidden role="dialog" aria-label="Ayarlar">
+    <div class="cbox mbox">
+      <div class="wtop"><b>⚙️ Ayarlar</b></div>
+      <label for="setSens">Bakış hassasiyeti: <span id="setSensV"></span></label>
+      <input id="setSens" type="range" min="0.4" max="2.5" step="0.1">
+      <label for="setFov">Görüş açısı (FOV): <span id="setFovV"></span></label>
+      <input id="setFov" type="range" min="60" max="100" step="1">
+      <label>Zorluk</label>
+      <div id="diffList" style="display:grid;gap:8px"></div>
+      <button class="btn" id="setAuto" type="button" style="margin-top:12px;width:100%"></button>
+      <button class="btn" id="setClose" type="button" style="margin-top:10px">Kapat</button>
+    </div>
+  </div>
+  <div id="records" hidden role="dialog" aria-label="Rekorlar">
+    <div class="cbox mbox">
+      <div class="wtop"><b>📊 Rekorlar</b></div>
+      <div id="recList" style="display:grid;gap:8px;margin:12px 0"></div>
+      <button class="btn" id="recClose" type="button">Kapat</button>
+    </div>
+  </div>
+  <div id="modes" hidden role="dialog" aria-label="Oyun modları">
+    <div class="cbox mbox">
+      <div class="wtop"><b>Oyun modu seç</b></div>
+      <div id="modeList"></div>
+      <div class="wnote">Özel modlar tek kişilik oynanır. Odada oynarken Klasik mod kullanılır.</div>
+      <button class="btn" id="modeClose" type="button">Kapat</button>
+    </div>
+  </div>
   <div id="crates" hidden role="dialog" aria-label="Kasalar">
     <div class="cbox">
       <div class="wtop"><b>Kasalar</b><span id="wallet2"></span></div>
@@ -265,6 +315,9 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
     </div>
     <label for="bonus">Bonus kodu (isteğe bağlı, başlangıç parası verir)</label>
     <input id="bonus" maxlength="16" autocomplete="off" placeholder="örn. DERS100">
+    <div class="btns"><button class="btn" id="setBtn" type="button">⚙️ Ayarlar</button><button class="btn" id="recBtn" type="button">📊 Rekorlar</button></div>
+    <button class="btn" id="armBtn" type="button" style="margin-top:12px;width:100%">🔫 Silah Deposu</button>
+    <button class="btn" id="modeBtn" type="button" style="margin-top:12px;width:100%">🎮 Mod</button>
     <button class="btn" id="mapBtn" type="button" style="margin-top:12px;width:100%">🗺️ Harita</button>
     <div class="btns">
       <button class="btn main" id="joinBtn" type="button">Odaya gir</button>
@@ -280,7 +333,7 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
     <p id="menuMsg" aria-live="polite"></p>
     <div class="keys">
       <kbd>W A S D</kbd> yürü &nbsp; <kbd>Shift</kbd> koş &nbsp; <kbd>Boşluk</kbd> zıpla<br>
-      <kbd>Fare</kbd> bak, <kbd>Sol tık</kbd> ateş &nbsp; <kbd>R</kbd> şarjör &nbsp; <kbd>1-4</kbd> silah &nbsp; <kbd>B</kbd> mağaza (zombi başı 20 TL) &nbsp; <kbd>E</kbd> buton<br>
+      <kbd>Fare</kbd> bak, <kbd>Sol tık</kbd> ateş &nbsp; <kbd>R</kbd> şarjör &nbsp; <kbd>1-0</kbd> silah &nbsp; <kbd>C</kbd> / <kbd>Ctrl</kbd> kay &nbsp; <kbd>X</kbd> otomatik koşu kilidi &nbsp; <kbd>G</kbd> bomba &nbsp; <kbd>H</kbd> can paketi &nbsp; <kbd>B</kbd> mağaza (zombi başı 20 TL) &nbsp; <kbd>E</kbd> buton<br>
       Dokunmatik ekranda: sol joystick yürür, ekranı sürükleyerek bakarsın, kırmızı düğme ateş eder. Silah adına dokununca silah değişir.<br>Fare çalışmazsa <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> ile bak.<br>
       Arkadaşlarınla aynı oda kodunu gir. Odayı ilk açan kişi çıkarsa oda kapanır, yeni kodla tekrar girin.
     </div>
@@ -6979,12 +7032,88 @@ var WEAPONS=[
   {n:'Tabanca',dmg:34,rate:0.26,mag:12,rel:1.2,auto:false,pel:1,spr:0.004,cost:0,len:0.7,col:0x555d66},
   {n:'SMG',dmg:19,rate:0.075,mag:32,rel:1.6,auto:true,pel:1,spr:0.022,cost:400,len:0.9,col:0x3d4a5c},
   {n:'Pompalı',dmg:13,rate:0.85,mag:6,rel:2.1,auto:false,pel:9,spr:0.075,cost:700,len:1.25,col:0x6b4a2f},
-  {n:'AK',dmg:30,rate:0.1,mag:30,rel:1.9,auto:true,pel:1,spr:0.012,cost:1200,len:1.35,col:0x2f3d2a}
+  {n:'AK',dmg:30,rate:0.1,mag:30,rel:1.9,auto:true,pel:1,spr:0.012,cost:1200,len:1.35,col:0x2f3d2a},
+  {n:'Çift Beretta',dmg:21,rate:0.085,mag:30,rel:2.2,auto:false,pel:1,spr:0.02,cost:900,len:0.72,col:0x8a8f96,dual:true},
+  {n:'AWP',dmg:150,rate:1.35,mag:5,rel:2.6,auto:false,pel:1,spr:0.0005,cost:1500,len:1.75,col:0x3a4a2a},
+  {n:'Deagle',dmg:72,rate:0.45,mag:7,rel:1.7,auto:false,pel:1,spr:0.006,cost:800,len:0.85,col:0xb8a24a},
+  {n:'M249',dmg:24,rate:0.07,mag:100,rel:4.2,auto:true,pel:1,spr:0.03,cost:2200,len:1.5,col:0x2d3138},
+  {n:'XM1014',dmg:11,rate:0.26,mag:7,rel:2.4,auto:true,pel:8,spr:0.07,cost:1800,len:1.3,col:0x5a3a22},
+  {n:'Plazma',dmg:42,rate:0.12,mag:40,rel:2.2,auto:true,pel:1,spr:0.004,cost:3000,len:1.2,col:0x2fd1ff}
 ];
+function ownInit(){return WEAPONS.map(function(w,i){return i===0;});}
+function ammoInit(){return WEAPONS.map(function(w){return w.mag;});}
+var MODES=[
+  {id:'classic',name:'Klasik Dalga',emoji:'🧟',desc:'Normal hayatta kalma: dalga dalga zombi, mağaza, kasa.'},
+  {id:'time',name:'Zaman Saldırısı',emoji:'⏱️',desc:'90 saniyen var. Her öldürme +3 sn ekler. Süre bitince oyun biter.'},
+  {id:'head',name:'Kafa Avı',emoji:'🎯',desc:'Sadece kafa vuruşu hasar verir. Gövdeye ateş boşa gider.'},
+  {id:'gungame',name:'Silah Yarışı',emoji:'🔫',desc:'10 silahın hepsi sırayla: her 3 öldürmede sıradaki silaha geçersin.'},
+  {id:'hard',name:'Hardcore',emoji:'💀',desc:'Aldığın hasar x3, dalga sonunda can yenilenmez, öldürme başına çift TL.'},
+  {id:'horde',name:'Sürü',emoji:'🌊',desc:'Çok daha fazla, hızlı ama zayıf zombi. Alanı temizle!'}
+];
+var MODE='classic',ACT='classic';
+function getMode(id){for(var i=0;i<MODES.length;i++)if(MODES[i].id===id)return MODES[i];return MODES[0];}
+var SET={sens:1,fov:75,auto:1,diff:1};
+try{var _s0=JSON.parse(lsGet('zlSet')||'{}');if(+_s0.sens>=0.4&&+_s0.sens<=2.5)SET.sens=+_s0.sens;if(+_s0.fov>=60&&+_s0.fov<=100)SET.fov=+_s0.fov;if(_s0.auto===0)SET.auto=0;if(_s0.diff===0||_s0.diff===2)SET.diff=_s0.diff;}catch(e){}
+function saveSet(){lsSet('zlSet',JSON.stringify(SET));}
+function applySettings(){try{camera.fov=SET.fov;camera.updateProjectionMatrix();}catch(e){}}
+var REC={wave:0,kills:0,combo:0,time:0};
+try{var _r0=JSON.parse(lsGet('zlRec')||'{}');for(var _kk in REC)if(+_r0[_kk]>0)REC[_kk]=+_r0[_kk];}catch(e){}
+function saveRec(){lsSet('zlRec',JSON.stringify(REC));}
+var PERK='none',LOADW=0;
+var PERKS=[
+  {id:'none',name:'Yok',desc:'Ekstra yetenek yok.'},
+  {id:'rel',name:'Hızlı Eller',desc:'Şarjör değiştirme %35 daha hızlı.'},
+  {id:'dmg',name:'Ağır Mermi',desc:'Verdiğin hasar %15 artar.'},
+  {id:'spd',name:'Hafif Ayak',desc:'Yürüme ve koşma %8 hızlanır.'},
+  {id:'hp',name:'Zırh',desc:'Aldığın hasar %15 azalır.'},
+  {id:'vamp',name:'Vampir',desc:'Her öldürmede +3 can kazanırsın.'},
+  {id:'luck',name:'Şanslı',desc:'Her öldürmede +6 TL ekstra.'}
+];
+var FREE_START=900;
+function startLoadout(){
+  if(ACT!=='gungame'&&LOADW>0&&WEAPONS[LOADW]&&WEAPONS[LOADW].cost<=FREE_START){S.own[LOADW]=true;S.wi=LOADW;}
+  setGun(S.wi);
+}
+function modeReset(){
+  S.sl=0;S.slCd=0;S.slk=0;S.gg=0;S.tl=90;S.ggWon=false;setAutoRun(false);
+  GR.forEach(function(g){scene.remove(g.m);});GR=[];S.gren=2;S.grCd=0;S.combo=0;S.comboAt=0;
+  if(ACT==='gungame'){S.own=WEAPONS.map(function(){return true;});S.wi=0;S.ammo=ammoInit();}
+}
+function modeKills(n){
+  var tn=performance.now();
+  S.combo=((tn-(S.comboAt||0))<3500?(S.combo||0):0)+n;S.comboAt=tn;
+  if(S.combo>REC.combo){REC.combo=S.combo;}
+  REC.kills+=n;saveRec();
+  if(S.combo>=3){var cb=Math.min(50,(S.combo-2)*5);S.score+=cb;toast('🔥 Seri x'+S.combo+' · +'+cb+' TL');}
+  if(PERK==='vamp')S.hp=Math.min(100,S.hp+3*n);
+  if(PERK==='luck')S.score+=6*n;
+  if(ACT==='time'){S.tl+=3*n;}
+  else if(ACT==='hard'){S.score+=20*n;}
+  else if(ACT==='gungame'){
+    S.gg+=n;var idx=Math.min(WEAPONS.length-1,Math.floor(S.gg/3));
+    if(idx!==S.wi){S.wi=idx;S.reloading=0;S.ammo[idx]=WEAPONS[idx].mag;setGun(idx);toast('Yeni silah: '+WEAPONS[idx].n);}
+    if(S.gg>=3*WEAPONS.length&&!S.ggWon){S.ggWon=true;toast('🏆 Silah Yarışı tamamlandı! Devam et, skorunu artır.');}
+  }
+}
+function modeTick(dt){
+  if(ACT==='time'&&S.alive&&S.phase===1){
+    S.tl-=dt;
+    if(S.tl<=0){if(S.kills>REC.time){REC.time=S.kills;saveRec();}S.tl=0;S.hp=0;S.alive=false;S.firing=false;toast('⏱️ Süre doldu! '+S.kills+' zombi öldürdün');}
+  }
+}
+function modeBanner(){
+  if(ACT==='classic'||STORY.on||S.phase===2)return '';
+  var m=getMode(ACT),t=m.emoji+' '+m.name+' · ';
+  if(ACT==='time')return t+'Süre '+Math.ceil(Math.max(0,S.tl))+' sn · Öldürme '+S.kills;
+  if(ACT==='gungame')return t+WEAPONS[S.wi].n+' · '+(S.gg%3)+'/3 · Silah '+(S.wi+1)+'/'+WEAPONS.length;
+  if(ACT==='head')return t+'Sadece kafa vuruşu · Dalga '+S.wave+' · Kalan '+S.left;
+  if(ACT==='hard')return t+'Dalga '+S.wave+' · Hasar x3 · Kalan '+S.left;
+  return t+'Dalga '+S.wave+' · Kalan '+S.left;
+}
 
 /* ================= durum ================= */
 var S={name:'Oyuncu',playing:false,locked:false,noLock:false,x:0,z:0,y:EYE,vy:0,yaw:0,pitch:0,hp:100,alive:true,
-  score:0,kills:0,fire:0,wi:0,own:[true,false,false,false],ammo:[12,32,6,30],reloading:0,nextShot:0,
+  score:0,kills:0,fire:0,wi:0,own:ownInit(),ammo:ammoInit(),reloading:0,nextShot:0,
   jx:0,jy:0,dmgT:0,shop:false,bonus:0,clapUntil:0,startedAt:0,wave:0,phase:0,bt:0,left:0,firing:false,pw:0,pp:-1};
 var keys={};
 var room=null, roomNS=null, roomCode='';
@@ -7233,7 +7362,8 @@ var gunDark=new T.MeshStandardMaterial({color:0x14171b,roughness:0.45,metalness:
 var mflash=(function(){var c=document.createElement('canvas');c.width=c.height=64;var g=c.getContext('2d');var gr=g.createRadialGradient(32,32,2,32,32,32);gr.addColorStop(0,'rgba(255,255,230,1)');gr.addColorStop(0.3,'rgba(255,190,80,.85)');gr.addColorStop(1,'rgba(255,120,30,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);
   var sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),transparent:true,depthTest:false,depthWrite:false,blending:T.AdditiveBlending}));sp.position.set(0,0.02,-0.68);sp.scale.set(0.4,0.4,1);sp.visible=false;sp.renderOrder=20;gun.add(sp);return sp;})();
 var recoil=0;
-function setGun(i){var w=WEAPONS[i];gun.scale.set(1,1,w.len);applyWeaponSkin(i);}
+var gunL=gun.clone();gunL.visible=false;gunL.position.set(-0.24,-0.22,-0.55);camera.add(gunL);
+function setGun(i){var w=WEAPONS[i];gun.scale.set(1,1,w.len);gunL.scale.set(1,1,w.len);applyWeaponSkin(i);}
 
 /* ================= zombi / oyuncu modelleri ================= */
 var G={body:new T.BoxGeometry(0.7,0.9,0.4),head:new T.BoxGeometry(0.45,0.45,0.45),eye:new T.BoxGeometry(0.1,0.07,0.04),
@@ -7533,6 +7663,8 @@ function zdef(type,wave){
   var hp=45+wave*11,sp=2.6+Math.min(wave*0.12,1.8),dm=10;
   if(type===1){hp*=0.55;sp*=1.7;dm=7;}
   if(type===2){hp*=3.2;sp*=0.7;dm=22;}
+  if(ACT==='horde'){hp*=0.55;sp*=1.2;dm*=0.8;}
+  hp*=[0.75,1,1.3][SET.diff];dm*=[0.7,1,1.3][SET.diff];
   return{hp:hp,sp:sp,dm:dm};
 }
 
@@ -7627,7 +7759,7 @@ function turretStep(dt,alive){
       var ix=H.zs.indexOf(tgt);if(ix>-1)H.zs.splice(ix,1);
       t.m+=20;
       var nx=t.wi+1;
-      if(nx<WEAPONS.length&&t.m>=WEAPONS[nx].cost){t.m-=WEAPONS[nx].cost;t.wi=nx;}
+      if(nx<TUR.length&&t.m>=WEAPONS[nx].cost){t.m-=WEAPONS[nx].cost;t.wi=nx;}
     }
   }
 }
@@ -7716,7 +7848,7 @@ function buildStoryMap(){
 }
 function setMapMode(m,id){
   var st=m==='story',map=st?null:getMap(id||MAPSEL),w=null;
-  try{EXPO=(m==='story')?1.45:(map.id==='desert'?1.2:(map.id==='aquapark'?0.95:1.5));try{var br=(map&&(map.id==='aquapark'||map.id==='snow'));PFX.bloom.strength=br?0.18:0.5;PFX.bloom.threshold=br?0.96:0.8;}catch(e){}}catch(e){}
+  try{EXPO=(m==='story')?1.45:(map.id==='desert'?1.2:(map.id==='aquapark'?0.95:(map.id==='farm'?1.0:(map.id==='airport'?1.15:1.5))));try{var br=(map&&(map.id==='aquapark'||map.id==='snow'));PFX.bloom.strength=br?0.18:0.5;PFX.bloom.threshold=br?0.96:0.8;}catch(e){}}catch(e){}
   if(st)buildStoryMap();else if(map.id!=='desert')w=buildMap(map);
   hideWorlds();clearSplats();
   if(st){
@@ -8091,6 +8223,11 @@ function mtex(kind,rx,rz){
     else if(kind==='factory'){g.fillStyle='#4a4a46';g.fillRect(0,0,w,h);noise(900,50,60,0.4);g.fillStyle='rgba(230,190,20,.55)';g.fillRect(0,h/2-4,w,8);g.strokeStyle='rgba(0,0,0,.4)';g.lineWidth=3;g.strokeRect(0,0,w,h);}
     else if(kind==='cobble'){g.fillStyle='#2e2a2f';g.fillRect(0,0,w,h);for(a=0;a<8;a++)for(b=0;b<8;b++){v=48+Math.random()*30|0;g.fillStyle='rgb('+v+','+(v-4)+','+(v+6)+')';g.fillRect(a*32+(b%2)*16+2,b*32+2,28,28);}}
     else if(kind==='water'){g.fillStyle='#1d4f7a';g.fillRect(0,0,w,h);for(i=0;i<60;i++){g.strokeStyle='rgba(180,220,255,'+(0.1+Math.random()*0.2)+')';g.lineWidth=2;g.beginPath();var y0=Math.random()*h,x0=Math.random()*w;g.moveTo(x0,y0);g.quadraticCurveTo(x0+20,y0-6,x0+44,y0);g.stroke();}}
+    else if(kind==='mall'){g.fillStyle='#d9d3c7';g.fillRect(0,0,w,h);for(a=0;a<4;a++)for(b=0;b<4;b++){v=(a+b)%2?214:196;g.fillStyle='rgb('+v+','+(v-6)+','+(v-16)+')';g.fillRect(a*64+1,b*64+1,62,62);}g.strokeStyle='rgba(60,50,40,.35)';g.lineWidth=2;g.strokeRect(0,0,w,h);noise(260,120,70,0.12);}
+    else if(kind==='field'){g.fillStyle='#4f6a2a';g.fillRect(0,0,w,h);for(i=0;i<1400;i++){v=70+Math.random()*60|0;g.fillStyle='rgb('+(v-5)+','+(v+50)+','+(v-40)+')';g.fillRect(Math.random()*w,Math.random()*h,2,6);}for(i=0;i<8;i++){g.fillStyle='rgba(110,80,40,.25)';g.beginPath();g.ellipse(Math.random()*w,Math.random()*h,10+Math.random()*24,6+Math.random()*12,Math.random()*3,0,6.28);g.fill();}}
+    else if(kind==='asphalt'){g.fillStyle='#2a2c30';g.fillRect(0,0,w,h);noise(1400,30,50,0.45);g.strokeStyle='rgba(0,0,0,.4)';g.lineWidth=2;g.beginPath();g.moveTo(0,h*0.3);g.lineTo(w,h*0.34);g.stroke();}
+    else if(kind==='cell'){g.fillStyle='#5b5e60';g.fillRect(0,0,w,h);noise(1000,60,60,0.35);g.strokeStyle='rgba(0,0,0,.4)';g.lineWidth=3;g.strokeRect(0,0,w,h);g.beginPath();g.moveTo(0,h/2);g.lineTo(w,h/2);g.moveTo(w/2,0);g.lineTo(w/2,h);g.stroke();}
+    else if(kind==='terminal'){for(a=0;a<2;a++)for(b=0;b<2;b++){v=(a+b)%2?196:184;g.fillStyle='rgb('+v+','+(v+4)+','+(v+12)+')';g.fillRect(a*128,b*128,128,128);}g.strokeStyle='rgba(40,50,70,.4)';g.lineWidth=3;g.strokeRect(0,0,w,h);g.beginPath();g.moveTo(w/2,0);g.lineTo(w/2,h);g.moveTo(0,h/2);g.lineTo(w,h/2);g.stroke();noise(260,150,60,0.12);}
     else if(kind==='station'){g.fillStyle='#8d8f8a';g.fillRect(0,0,w,h);for(a=0;a<4;a++)for(b=0;b<4;b++){v=(a+b)%2?150:132;g.fillStyle='rgb('+v+','+v+','+(v-4)+')';g.fillRect(a*64,b*64,64,64);}g.strokeStyle='rgba(0,0,0,.3)';g.lineWidth=2;g.strokeRect(0,0,w,h);noise(300,90,70,0.2);}
     else{g.fillStyle='#555';g.fillRect(0,0,w,h);}
   },[rx||1,rz||1]);
@@ -8592,6 +8729,291 @@ function bSubway(k,d){
   k.g.add(new T.HemisphereLight(0x889098,0x14161a,0.4));
 }
 
+
+/* ---- AVM ---- */
+function bMall(k,d){
+  var H=7,AX=d.arx,AZ=d.arz,wl=MAT(0xc9c3b8),wl2=MAT(0x9b9488),stone=MAT(0xb8b2a6),green=MAT(0x2f7a3a),pot=MAT(0x6a5a4a),
+      shelf=MAT(0x8a6a3a),counter=MAT(0x5a4a3a),mann=MAT(0xd6d0c6),water=MAT(0x2e8fd1,0x0a3a66),glass=MAT(0x9fd4e8,0x1a3a4a),blood=MAT(0x4a0606);
+  k.floor('mall',6);k.ceiling(H,0xd9d4ca);k.perim(H,wl2,2);
+  var gaps=[-43,-20,0,20,43],neon=[[0xff3b7a,0x88204a],[0x35c6ff,0x105a80],[0xffd23f,0x806010],[0x7cff4f,0x2a7a10],[0xc58bff,0x4a2a80]];
+  [-1,1].forEach(function(sx){
+    wallLine(k,sx*16,-AZ,sx*16,AZ,gaps,5,6,1,wl);
+    [-31.5,-10,10,31.5].forEach(function(z){k.wall(sx*30,z,28,1,6,wl);});
+    gaps.forEach(function(zc,i){
+      var nc=neon[(i+(sx>0?2:0))%5];
+      k.deco(sx*16,5.4,zc,0.5,0.8,6,MAT(nc[0],nc[1]));
+      k.deco(sx*16,2.6,zc-3.6,0.2,3.6,0.2,glass);k.deco(sx*16,2.6,zc+3.6,0.2,3.6,0.2,glass);
+      var v=i%3;
+      if(v===0){k.wall(sx*32,zc-5,12,0.6,1.6,shelf);k.wall(sx*32,zc+5,12,0.6,1.6,shelf);k.cyl(sx*22,zc-3.2,0.3,1.8,mann,true);k.cyl(sx*22,zc+3.2,0.3,1.8,mann,true);}
+      else if(v===1){k.wall(sx*27,zc-4,5,2,1.0,counter);k.wall(sx*27,zc+4,5,2,1.0,counter);k.wall(sx*36,zc,2,10,1.8,shelf);}
+      else{k.wall(sx*24,zc-6,1,6,1.8,shelf);k.wall(sx*24,zc+6,1,6,1.8,shelf);k.wall(sx*34,zc,10,0.8,1.2,shelf);}
+      k.wall(sx*41.5,zc,1.5,8,1.2,counter);
+      k.deco(sx*30,5.6,zc,10,0.15,10,MAT(0xfff2d8,0xe8d8a8));
+    });
+  });
+  k.cyl(0,0,3.6,0.7,stone,true);
+  k.mesh(new T.CylinderGeometry(3.0,3.0,0.12,24),water,0,0.72,0);
+  k.deco(0,1.6,0,0.6,2.0,0.6,stone);
+  k.mesh(new T.ConeGeometry(0.5,1.4,10),water,0,3.0,0);
+  [[-7,-6],[7,6],[-7,6],[7,-6]].forEach(function(p){k.bench(p[0],p[1],2.6,0.9,0.9);});
+  [[-12,-40],[12,-40],[-12,40],[12,40],[-12,-14],[12,-14],[-12,14],[12,14]].forEach(function(p){
+    k.cyl(p[0],p[1],0.9,1.1,pot,true);k.mesh(new T.SphereGeometry(1.1,10,8),green,p[0],2.0,p[1]);});
+  [-36,-18,18,36].forEach(function(z){[-1,1].forEach(function(sx){k.column(sx*10,z,0.7,H,0xb8b2a6);});});
+  k.wall(-6,-28,3,3,2.6,wl2);k.wall(6,28,3,3,2.6,wl2);k.wall(6,-28,3,3,2.6,counter);k.wall(-6,28,3,3,2.6,counter);
+  var ls=[];
+  [-44,-22,0,22,44].forEach(function(z){
+    var l=k.light(0xfff2dc,1.1,30,0,6,z);l.userData.b=1.1;ls.push(l);});
+  [-45,-27,-9,9,27,45].forEach(function(z){k.deco(0,H-0.05,z,10,0.1,3,MAT(0xfff8e0,0xfff0c0));});
+  k.anims.push(function(dt,now){for(var j=0;j<ls.length;j++){var l=ls[j];l.intensity=(j===1||j===3)&&Math.random()<0.015?0.1:l.userData.b*(0.9+0.1*Math.sin(now/300+j*2));}});
+  k.deco(0,3,AZ-0.3,14,6,0.2,glass);k.deco(0,6.2,AZ-0.6,12,0.8,0.2,MAT(0xffd23f,0x886600));
+  var i;for(i=0;i<10;i++){var b=k.mesh(new T.CircleGeometry(0.5+Math.random()*1.1,12),blood,(Math.random()-0.5)*26,0.03,(Math.random()-0.5)*100);b.rotation.x=-Math.PI/2;}
+  k.g.add(new T.HemisphereLight(0xfff6e8,0x8a8478,0.75));
+}
+
+
+/* ===== YENİ HARİTALAR: ÇİFTLİK · HAPİSHANE · HAVALİMANI · KÖPRÜ ===== */
+function stairsTo(k,x,z,dir,w,top,mat){
+  var n=Math.round(top/0.3),rise=top/n,sd=0.42,off=sd/2+sd*(n-1),sx=x,sz=z;
+  if(dir==='-z')sz=z+off;else if(dir==='+z')sz=z-off;else if(dir==='-x')sx=x+off;else sx=x-off;
+  k.stairs(sx,sz,dir,w,rise,n,sd,mat);
+}
+
+/* ---- ÇİFTLİK (gün batımı) ---- */
+function bFarm(k,d){
+  var AX=d.arx,AZ=d.arz,R=rng(41),i;
+  var red=MAT(0xa83a2e),roofR=MAT(0x5a2a22),white=MAT(0xe8e2d4),roofM=MAT(0x4a3a30),wood=MAT(0x8a6a3a),woodD=MAT(0x5e4524),
+      hay=MAT(0xd4b24a),gray=MAT(0x9aa0a6),road=MAT(0x7a6040),leaf=MAT(0x2f6a2a),trunk=MAT(0x4a3524),glowM=MAT(0xffd7a0,0xffaa55);
+  k.floor('field',9);k.perim(2.2,woodD,2);
+  var rd=k.mesh(new T.PlaneGeometry(7,AZ*2),road,0,0.02,0);rd.rotation.x=-Math.PI/2;
+  var rd2=k.mesh(new T.PlaneGeometry(28,5),road,-14,0.021,-16);rd2.rotation.x=-Math.PI/2;
+  for(i=-44;i<=44;i+=8)k.res.push([0,i,5]);
+  /* ambar */
+  var bx=-28,bz=-26;
+  k.wall(bx,bz-8,24,1,6.5,red);k.wall(bx-12,bz,1,16,6.5,red);k.wall(bx+12,bz,1,16,6.5,red);
+  wallLine(k,bx-12,bz+8,bx+12,bz+8,[bx],7,6.5,1,red);
+  k.roofG(bx,6.5,bz,25,17,roofR,4.2);
+  k.deco(bx-3.7,3.3,bz+8.15,0.3,6.6,0.3,white);k.deco(bx+3.7,3.3,bz+8.15,0.3,6.6,0.3,white);k.deco(bx,6.6,bz+8.15,7.7,0.3,0.3,white);
+  k.wall(bx-8,bz-3,6,6,1.8,hay);stairsTo(k,bx-8,bz,'-z',2.4,1.8,hay);
+  k.wall(bx+6,bz-6,2,2,1.2,hay);k.wall(bx+8.4,bz-6,2,2,1.2,hay);k.wall(bx+7.2,bz-3.8,2,2,0.8,hay);
+  k.light(0xffa860,1.6,28,bx,5,bz);
+  /* çiftlik evi */
+  var hx=26,hz=22;
+  k.wall(hx,hz-5,14,1,4.5,white);k.wall(hx-7,hz,1,10,4.5,white);k.wall(hx+7,hz,1,10,4.5,white);
+  wallLine(k,hx-7,hz+5,hx+7,hz+5,[hx-3],3.6,4.5,1,white);
+  k.roofG(hx,4.5,hz,15,11,roofM,3.2);
+  k.deco(hx-3,0.18,hz+7,5,0.36,3,wood);k.deco(hx+3.5,2.4,hz+5.05,2.2,1.4,0.1,glowM);
+  k.desk(hx+3,hz-2.5,3,1.4,0.9,true);k.bed(hx-4,hz-3.4);
+  k.light(0xffc27a,1.3,24,hx,3,hz);
+  /* silolar */
+  k.cyl(36,-38,3,13,gray,true);k.mesh(new T.ConeGeometry(3.3,2.2,16),roofM,36,14.1,-38);
+  k.cyl(43,-33,2.6,11,gray,true);k.mesh(new T.ConeGeometry(2.9,2.0,16),roofM,43,12.0,-33);
+  /* yel değirmeni */
+  k.cyl(10,-12,1.7,11,white,true);k.mesh(new T.ConeGeometry(1.7,1.8,10),roofR,10,11.9,-12);
+  var hub=new T.Group();hub.position.set(10,10.3,-10);k.g.add(hub);
+  for(i=0;i<4;i++){var arm=new T.Group();arm.rotation.z=i*Math.PI/2;var bl=new T.Mesh(new T.BoxGeometry(0.55,5.4,0.08),woodD);bl.position.y=3;arm.add(bl);hub.add(arm);}
+  k.anims.push(function(dt){hub.rotation.z+=dt*0.55;});
+  /* traktör */
+  var tm=MG();
+  tm.add(RBG(1.7,1.1,3.2,0.12),0,1.0,0,0x2f7a3a);tm.add(RBG(1.5,1.5,1.5,0.1),0,2.1,-0.6,0x2f7a3a);tm.add(RBG(1.3,0.9,1.3,0.08),0,2.2,-0.6,0x1c2530);
+  [[-1,-1.0,0.75],[1,-1.0,0.75],[-1,1.2,0.45],[1,1.2,0.45]].forEach(function(w){tm.add(new T.CylinderGeometry(w[2],w[2],0.45,12),w[0]*1.05,w[2],w[1],0x141414,0,0,Math.PI/2);});
+  tm.add(new T.CylinderGeometry(0.07,0.07,1.3,6),0.5,2.4,1.0,0x2a2a2a);
+  var tr=k.piece(tm.build(),-8,-4,[3.2,4.0,2.8],true);tr.rotation.y=0.5;
+  /* yuvarlak balyalar */
+  var bm=MG();bm.add(new T.CylinderGeometry(0.9,0.9,1.3,14),0,0.9,0,0xd4b24a,0,0,Math.PI/2);bm.add(new T.CylinderGeometry(0.93,0.93,0.1,14),0.66,0.9,0,0xb8962e,0,0,Math.PI/2);
+  var baleG=bm.build();
+  k.scatter(9,5,1.6,function(x,z,r){var m=k.piece(baleG,x,z,[2.0,1.8,1.8],true);m.rotation.y=r*3;});
+  /* korkuluk */
+  var sm=MG();sm.add(new T.CylinderGeometry(0.05,0.06,2.3,6),0,1.15,0,0x5e4524);sm.add(RBG(1.7,0.1,0.1,0.02),0,1.7,0,0x5e4524);
+  sm.add(RBG(0.55,0.75,0.2,0.05),0,1.5,0,0x4a6a8a);sm.add(new T.SphereGeometry(0.22,10,8),0,2.2,0,0xc9a86a);sm.add(new T.ConeGeometry(0.38,0.4,10),0,2.55,0,0x3a2a1a);
+  k.piece(sm.build(),44,22,[0.7,0.7,2.4],true);
+  /* mısır tarlaları */
+  var cm=MG();
+  function field(x0,z0,x1,z1){var x,z;for(x=x0;x<=x1;x+=1.5)for(z=z0;z<=z1;z+=1.5){
+    var px=x+(R()-0.5)*0.7,pz=z+(R()-0.5)*0.7,hh=1.5+R()*0.5;
+    cm.add(new T.CylinderGeometry(0.05,0.07,hh,4),px,hh/2,pz,0x7a9a2a);
+    cm.add(new T.BoxGeometry(0.55,0.06,0.14),px,hh*0.62,pz,0x6a8a24,0,R()*3,0.3);
+    cm.add(new T.BoxGeometry(0.1,0.35,0.1),px+0.06,hh*0.5,pz,0xd8b84a);}}
+  field(34,2,51,40);field(-51,2,-37,40);
+  k.piece(cm.build(),0,0);
+  /* ağıl */
+  wallLine(k,-24,26,-8,26,[],1,1.1,0.3,woodD);wallLine(k,-24,40,-8,40,[],1,1.1,0.3,woodD);
+  wallLine(k,-24,26,-24,40,[],1,1.1,0.3,woodD);wallLine(k,-8,26,-8,40,[33],4,1.1,0.3,woodD);
+  k.wall(-16,33,6,0.8,0.7,wood);
+  /* ağaçlar */
+  k.scatter(14,31,1.6,function(x,z,r){k.cyl(x,z,0.35,2.6,trunk,true);k.mesh(new T.SphereGeometry(1.9+r*0.8,10,8),leaf,x,3.6+r*0.5,z);});
+  k.g.add(new T.HemisphereLight(0xffe0b0,0x4a5a3a,0.95));
+  var sun=new T.DirectionalLight(0xffc88a,0.9);sun.position.set(-60,30,40);k.g.add(sun);
+}
+
+/* ---- HAPİSHANE (gece) ---- */
+function bPrison(k,d){
+  var AX=d.arx,AZ=d.arz,H=6,i;
+  var conc=MAT(0x8a8d90),concD=MAT(0x5e6166),bar=MAT(0x2a2d31),orange=MAT(0xff7a1a,0x883a00),steel=MAT(0x9aa0a6),wire=MAT(0x3a3d42),glow=MAT(0xfff2b0,0xcfc080),wh=MAT(0xe8e8e8);
+  k.floor('cell',7);k.perim(8,concD,2);
+  k.deco(0,H+0.15,-27,58,0.3,28,concD);
+  k.wall(0,-40,57,1,H,conc);
+  wallLine(k,-28,-40,-28,-14,[-27],4,H,1,conc);wallLine(k,28,-40,28,-14,[-27],4,H,1,conc);
+  wallLine(k,-28,-14,28,-14,[-14,14],5,H,1,conc);
+  var cx=[-24.5,-17.5,-10.5,-3.5,3.5,10.5,17.5,24.5];
+  wallLine(k,-28,-30,28,-30,cx,3,H,0.5,conc);wallLine(k,-28,-24,28,-24,cx,3,H,0.5,conc);
+  [-21,-14,-7,0,7,14,21].forEach(function(x){k.wall(x,-35,0.6,10,H,conc);k.wall(x,-19,0.6,10,H,conc);});
+  cx.forEach(function(x){
+    k.bed(x-1.7,-38.2);k.cyl(x+2.4,-38.6,0.32,0.55,steel,true);k.deco(x+1.6,1.6,-29.3,0.1,3.2,1.5,bar);
+    k.bed(x-1.7,-15.8);k.cyl(x+2.4,-15.4,0.32,0.55,steel,true);k.deco(x+1.6,1.6,-24.7,0.1,3.2,1.5,bar);
+  });
+  var ls=[];
+  [-20,0,20].forEach(function(x){var l=k.light(0xffe0b0,1.0,24,x,5,-27);l.userData.b=1.0;ls.push(l);k.deco(x,5.9,-27,3,0.1,0.8,glow);});
+  var al=k.light(0xff2a2a,1.2,26,0,5,-27);
+  /* yard: basketbol sahası */
+  var ct=k.mesh(new T.PlaneGeometry(15,26),MAT(0x2c4a6e),-18,0.02,26);ct.rotation.x=-Math.PI/2;
+  k.deco(-18,0.04,13,15,0.04,0.2,wh);k.deco(-18,0.04,39,15,0.04,0.2,wh);k.deco(-18,0.04,26,15,0.04,0.2,wh);
+  k.deco(-25.5,0.04,26,0.2,0.04,26,wh);k.deco(-10.5,0.04,26,0.2,0.04,26,wh);
+  k.pole(-18,14,3.6,0x777777);k.deco(-18,3.4,14.7,1.8,1.1,0.08,wh);
+  k.pole(-18,38,3.6,0x777777);k.deco(-18,3.4,37.3,1.8,1.1,0.08,wh);
+  /* kafes */
+  wallLine(k,12,18,24,18,[18],4,2.4,0.3,wire);wallLine(k,12,30,24,30,[],1,2.4,0.3,wire);
+  wallLine(k,12,18,12,30,[],1,2.4,0.3,wire);wallLine(k,24,18,24,30,[24],4,2.4,0.3,wire);
+  k.bench(18,24,2.6,0.9,0.9);
+  /* nöbetçi kulübesi */
+  k.wall(0,27.5,5,0.6,3,conc);k.wall(-2.5,30,0.6,5,3,conc);k.wall(2.5,30,0.6,5,3,conc);
+  wallLine(k,-2.5,32.5,2.5,32.5,[0],2,3,0.6,conc);
+  k.deco(0,3.1,30,6,0.3,6,concD);k.deco(0,1.9,27.15,3,0.9,0.1,MAT(0x7aa0b0,0x14202a));
+  k.bench(22,44,2.6,0.9,0.9);
+  k.scatter(10,9,1.4,function(x,z,r){k.cyl(x,z,0.5,1.0,orange,true);});
+  /* gözetleme kuleleri */
+  function tower(tx,tz,top){
+    var hx=3.2;
+    [[-2.6,-2.6],[2.6,-2.6],[-2.6,2.6],[2.6,2.6]].forEach(function(p){k.colAt(tx+p[0],tz+p[1],0,top-0.3,0.3,steel);});
+    k.slab(tx,tz,6.4,6.4,top-0.3,top,conc);
+    k.slab(tx,tz-hx,6.4,0.15,top,top+1.1,wire);k.slab(tx-hx,tz,0.15,6.4,top,top+1.1,wire);k.slab(tx+hx,tz,0.15,6.4,top,top+1.1,wire);
+    k.slab(tx-2.3,tz+hx,1.8,0.15,top,top+1.1,wire);k.slab(tx+2.3,tz+hx,1.8,0.15,top,top+1.1,wire);
+    [[-3,-3],[3,-3],[-3,3],[3,3]].forEach(function(p){k.colAt(tx+p[0],tz+p[1],top,top+3.3,0.12,steel);});
+    k.deco(tx,top+3.4,tz,7,0.3,7,concD);
+    stairsTo(k,tx,tz+hx,'-z',2.2,top,conc);
+  }
+  tower(-32,34,4.2);tower(32,34,4.2);
+  var sl1=k.light(0xfff0c8,1.8,42,0,4,12),sl2=k.light(0xfff0c8,1.8,42,0,4,12);
+  var fl=k.light(0xdfe8ff,1.2,36,0,6,34);k.pole(0,38,6,0x4a4d52);
+  k.deco(0,3.4,AZ-0.3,9,6.8,0.4,bar);k.deco(0,7.2,AZ-0.4,12,0.8,0.2,orange);
+  k.deco(0,8.4,-AZ,2*AX,0.2,0.2,wire);k.deco(0,8.4,AZ,2*AX,0.2,0.2,wire);k.deco(-AX,8.4,0,0.2,0.2,2*AZ,wire);k.deco(AX,8.4,0,0.2,0.2,2*AZ,wire);
+  k.anims.push(function(dt,now){
+    var j;for(j=0;j<ls.length;j++)ls[j].intensity=Math.random()<0.02?0.1:ls[j].userData.b*(0.85+0.15*Math.sin(now/130+j*2));
+    al.intensity=0.2+1.2*Math.abs(Math.sin(now/350));
+    sl1.position.set(Math.sin(now/1900)*30,4,12+Math.cos(now/1400)*20);
+    sl2.position.set(Math.sin(now/1500+2)*30,4,14+Math.cos(now/1800+1)*18);
+  });
+  k.g.add(new T.HemisphereLight(0x6a7a8a,0x101418,0.35));
+}
+
+/* ---- HAVALİMANI ---- */
+function bAirport(k,d){
+  var AX=d.arx,AZ=d.arz,H=9,i,x,z;
+  var wallM=MAT(0xb8c0c8),counter=MAT(0x4a5260),steel=MAT(0x8a929a),belt=MAT(0x2a2d31),glassM=MAT(0x9fc4d8,0x16303f),blue=MAT(0x2f5f9a,0x103a6a),yel=MAT(0xffd23f,0x806010),asph=MAT(0x2c2f34),pale=MAT(0xe8ecf0);
+  k.floor('terminal',8);k.ceiling(H,0xcfd6de);k.perim(H,wallM,2);
+  var ap=k.mesh(new T.PlaneGeometry(2*AX,22),asph,0,0.03,-53);ap.rotation.x=-Math.PI/2;
+  for(x=-40;x<=40;x+=10)k.deco(x,0.05,-47,0.3,0.04,3,yel);
+  wallLine(k,-AX,-42,AX,-42,[-22,22],6,H,0.6,glassM);
+  /* uçak */
+  var pm=MG();
+  pm.add(new T.CylinderGeometry(2.3,2.3,30,16),0,2.6,0,0xe8ecf0,0,0,Math.PI/2);
+  pm.add(new T.SphereGeometry(2.3,16,10),15,2.6,0,0xe8ecf0,0,0,0,1.3,1,1);
+  pm.add(new T.ConeGeometry(2.3,6,16),-18,2.6,0,0xe8ecf0,0,0,Math.PI/2);
+  pm.add(RBG(4,5,0.3,0.05),-16,5.6,0,0x2f5f9a);
+  pm.add(new T.CylinderGeometry(2.32,2.32,0.5,16),9,2.6,0,0x2f5f9a,0,0,Math.PI/2);
+  for(i=0;i<17;i++){[-1,1].forEach(function(s){pm.add(RBG(0.5,0.45,0.05,0.01),-11+i*1.4,3.2,s*2.3,0x1a2a3a);});}
+  [-1,1].forEach(function(s){pm.add(new T.CylinderGeometry(0.7,0.7,2.4,10),-1,1.0,s*5,0x8a929a,0,0,Math.PI/2);});
+  k.piece(pm.build(),0,-53,[30,4.6,4.6],true);
+  k.slab(-1,-53,5,18,1.2,1.6,pale);
+  /* kapı alanı */
+  [-1,1].forEach(function(sx){
+    for(i=0;i<5;i++){k.bench(sx*(10+i*6),-22,3.4,0.9,0.9);k.bench(sx*(10+i*6),-30,3.4,0.9,0.9);}
+    k.wall(sx*34,-38,6,1.6,1.1,counter);k.wall(sx*10,-38,6,1.6,1.1,counter);
+    k.deco(sx*34,H-1.6,-41.6,6,1.2,0.2,blue);k.deco(sx*10,H-1.6,-41.6,6,1.2,0.2,blue);
+  });
+  k.deco(0,6,-41.6,16,2.6,0.2,MAT(0x101820,0x0a3a2a));
+  /* güvenlik hattı */
+  wallLine(k,-AX,12,AX,12,[-30,-10,10,30],4.4,5,0.8,wallM);
+  [-30,-10,10,30].forEach(function(gx){k.wall(gx+3.6,12,2.6,2.6,1.3,belt);k.wall(gx-3.6,12,2.6,2.6,1.3,belt);k.deco(gx,5.6,12,4.4,0.6,0.3,yel);});
+  /* check-in */
+  [34,44].forEach(function(cz){[-36,-22,-8,8,22,36].forEach(function(cxp){
+    k.wall(cxp,cz,8,1.6,1.1,counter);
+    if(cz===44){k.deco(cxp,0.5,46.3,8,0.5,1.2,steel);k.deco(cxp,6,44,8,1.6,0.3,yel);}
+  });});
+  /* orta salon */
+  k.wall(-26,-2,10,6,1.2,counter);k.deco(-26,3.4,-2,10.4,0.3,6.4,blue);
+  k.wall(26,-2,10,6,1.2,counter);k.deco(26,3.4,-2,10.4,0.3,6.4,blue);
+  k.cyl(0,2,2.6,1.1,counter,true);k.deco(0,3.6,2,1.2,1.2,1.2,MAT(0x35c6ff,0x105a80));
+  [-34,-16,16,34].forEach(function(cxp){[-34,-8,20,50].forEach(function(czp){k.column(cxp,czp,0.8,H,0xcfd2d6);});});
+  var ls=[];
+  [-30,-6,18,42].forEach(function(zz){var l=k.light(0xeaf2ff,1.2,34,0,8,zz);l.userData.b=1.2;ls.push(l);});
+  for(z=-36;z<=60;z+=12)k.deco(0,H-0.05,z,14,0.1,3,MAT(0xf4fbff,0xdde8f0));
+  k.anims.push(function(dt,now){for(var j=0;j<ls.length;j++)ls[j].intensity=(j===1&&Math.random()<0.02)?0.15:ls[j].userData.b*(0.92+0.08*Math.sin(now/260+j));});
+  k.deco(0,3,AZ-0.3,16,6,0.2,glassM);
+  k.g.add(new T.HemisphereLight(0xe8f0ff,0x808890,0.85));
+}
+
+/* ---- KÖPRÜ (gece) ---- */
+function carGeo(col){
+  var m=MG();
+  m.add(RBG(1.9,0.62,4.2,0.12),0,0.62,0,col);m.add(RBG(1.62,0.55,2.1,0.12),0,1.18,-0.2,0x1c2530);
+  [[-1,-1.3],[1,-1.3],[-1,1.3],[1,1.3]].forEach(function(w){m.add(new T.CylinderGeometry(0.34,0.34,0.26,10),w[0]*0.98,0.34,w[1],0x141414,0,0,Math.PI/2);});
+  m.add(RBG(0.5,0.12,0.06,0.02),-0.6,0.7,2.1,0xffe9a0);m.add(RBG(0.5,0.12,0.06,0.02),0.6,0.7,2.1,0xffe9a0);
+  m.add(RBG(0.5,0.12,0.06,0.02),-0.6,0.7,-2.1,0xaa1111);m.add(RBG(0.5,0.12,0.06,0.02),0.6,0.7,-2.1,0xaa1111);
+  return m.build();
+}
+function bBridge(k,d){
+  var AX=d.arx,AZ=d.arz,R=rng(11),i,z;
+  var conc=MAT(0x7a7d80),rail=MAT(0x8a8d90),steel=MAT(0x6a737d),white=MAT(0xe8e8e8),glowO=MAT(0xffb050,0xff8a20),flameM=MAT(0xff7a1a,0xff4400);
+  k.floor('asphalt',8);k.perim(1.2,rail,1.2);
+  var wt=mtex('water',40,40),water=k.mesh(new T.PlaneGeometry(900,900),new T.MeshLambertMaterial({map:wt,color:0x6688aa}),0,-14,0);water.rotation.x=-Math.PI/2;
+  k.anims.push(function(dt){wt.offset.x+=dt*0.01;wt.offset.y+=dt*0.006;});
+  var wtex=ctex(64,128,function(g,w,h){g.fillStyle='#0c1018';g.fillRect(0,0,w,h);var a,b;for(a=0;a<6;a++)for(b=0;b<14;b++){if(Math.random()<0.45){g.fillStyle=Math.random()<0.5?'#ffd98a':'#9ad0ff';g.fillRect(4+a*10,4+b*9,6,5);}}});
+  var skyM=new T.MeshLambertMaterial({map:wtex,emissive:0xffffff,emissiveMap:wtex});
+  for(i=0;i<28;i++){var sd=i%2?1:-1,bw=8+R()*10,bd=8+R()*10,bh=16+R()*44;
+    k.mesh(new T.BoxGeometry(bw,bh,bd),skyM,sd*(AX+16+R()*70),-14+bh/2,-130+R()*260);}
+  for(z=-AZ+3;z<AZ;z+=6){[-10,10].forEach(function(lx){k.deco(lx,0.02,z,0.2,0.04,2.6,white);});}
+  [-18.5,18.5].forEach(function(ex){k.deco(ex,0.02,0,0.2,0.04,2*AZ,white);});
+  wallLine(k,0,-AZ,0,AZ,[-48,-20,20,48],5,0.9,0.8,conc);
+  /* kule ve kablolar */
+  [-1,1].forEach(function(sx){k.wall(sx*19,0,2,2.4,42,conc);});
+  var cm=MG(),yA=new T.Vector3(0,1,0),qt=new T.Quaternion(),dv=new T.Vector3();
+  [-1,1].forEach(function(sx){for(i=1;i<=10;i++){[-1,1].forEach(function(sz){
+    var x0=sx*19,y0=38,z0=sz*0.5,x1=sx*19.5,y1=1.3,z1=sz*(4+i*5.4);
+    dv.set(x1-x0,y1-y0,z1-z0);var len=dv.length();qt.setFromUnitVectors(yA,dv.clone().normalize());
+    cm.addQ(new T.CylinderGeometry(0.08,0.08,len,5),(x0+x1)/2,(y0+y1)/2,(z0+z1)/2,0x9aa0a8,qt);});}});
+  k.piece(cm.build(),0,0);
+  /* otobüs */
+  var bm=MG();
+  bm.add(RBG(2.7,2.5,11,0.2),0,1.8,0,0xd8b010);bm.add(RBG(2.74,0.8,10.2,0.1),0,2.3,0,0x1c2530);
+  [[-1,-3.6],[1,-3.6],[-1,3.6],[1,3.6]].forEach(function(w){bm.add(new T.CylinderGeometry(0.5,0.5,0.35,12),w[0]*1.3,0.5,w[1],0x141414,0,0,Math.PI/2);});
+  var bus=k.piece(bm.build(),-10,-22,[3.4,11.4,3.1],true);bus.rotation.y=0.15;
+  /* yanan tanker */
+  var tk=MG();
+  tk.add(new T.CylinderGeometry(1.3,1.3,9,16),0,2.0,-1.5,0xc9ccd0,Math.PI/2,0,0);
+  tk.add(RBG(2.4,2.2,2.4,0.15),0,1.5,4.4,0x2f5f9a);tk.add(RBG(2.1,0.7,0.1,0.02),0,2.0,5.62,0x1c2530);
+  [[-1,-4],[1,-4],[-1,-2.6],[1,-2.6],[-1,4.4],[1,4.4]].forEach(function(w){tk.add(new T.CylinderGeometry(0.55,0.55,0.4,12),w[0]*1.2,0.55,w[1],0x141414,0,0,Math.PI/2);});
+  var tnk=k.piece(tk.build(),11,-8,[3.2,15,3.4],true);tnk.rotation.y=-0.2;
+  var fire=k.light(0xff8a30,2.4,34,11,3,-10);
+  var fl1=k.mesh(new T.ConeGeometry(0.9,2.6,8),flameM,11.4,3.6,-9),fl2=k.mesh(new T.ConeGeometry(0.6,2.0,8),flameM,10.4,3.4,-11);
+  k.anims.push(function(dt,now){fire.intensity=2.0+Math.sin(now/80)*0.4+Math.random()*0.6;fl1.scale.y=0.8+0.5*Math.abs(Math.sin(now/110));fl2.scale.y=0.8+0.5*Math.abs(Math.sin(now/90+1));});
+  /* tabela köprüsü */
+  [-1,1].forEach(function(sx){k.wall(sx*19.3,28,0.7,0.7,7.2,steel);});
+  k.deco(0,7.1,28,38.6,0.6,0.6,steel);k.deco(-8,5.7,28,9,2.4,0.2,MAT(0x1f7a3a,0x0a4a1a));k.deco(9,5.7,28,9,2.4,0.2,MAT(0x1f7a3a,0x0a4a1a));
+  /* araçlar */
+  var cols=[0x8a1f1f,0x1f3a8a,0x2a2a2e,0xc9c9cc,0x3a6a3a,0xb8a24a,0x5a2a6a],cache={};
+  k.scatter(30,17,2.6,function(x,z,r){
+    var c=cols[Math.floor(r*cols.length*0.999)];if(!cache[c])cache[c]=carGeo(c);
+    var m=k.piece(cache[c],x,z,[2.5,4.6,1.5],true);m.rotation.y=(r>0.5?Math.PI:0)+(R()-0.5)*0.4;
+  });
+  /* lambalar */
+  var ls=[];
+  for(z=-60;z<=60;z+=20){[-19,19].forEach(function(lx){k.pole(lx,z,7.5,0x3a3d42);k.mesh(new T.SphereGeometry(0.28,8,6),glowO,lx,7.6,z);});}
+  [-56,-28,0,28,56].forEach(function(lz,j){var l=k.light(0xffb36a,1.5,34,j%2?18:-18,7.2,lz);l.userData.b=1.5;ls.push(l);});
+  k.anims.push(function(dt,now){for(var j=0;j<ls.length;j++)ls[j].intensity=(j===2&&Math.random()<0.03)?0.2:ls[j].userData.b;});
+  k.g.add(new T.HemisphereLight(0x3a4a6a,0x10141c,0.5));
+  var moon=new T.DirectionalLight(0x7a90c8,0.45);moon.position.set(-30,60,-20);k.g.add(moon);
+}
+
 /* ====== HARİTA LİSTESİ ====== */
 
 /* ===== AQUAPARK: su kaydırakları, dalga havuzu, tembel nehir; çıkılabilir kuleler ve girilebilir binalar ===== */
@@ -8751,6 +9173,11 @@ var MAPS=[
   {id:'graveyard',name:'Mezarlık',emoji:'⚰️',desc:'Sis, mezar taşları, eski şapel ve gök gürültülü fırtına.',arx:50,arz:50,start:{x:0,z:42},spawns:[[-44,-48,44,-44],[-48,-20,-44,20],[44,-20,48,20]],sky:0x080814,fog:[0x120a1c,0.04],flash:1.0,build:bGrave},
   {id:'factory',name:'Fabrika',emoji:'🏭',desc:'Konveyör bantları, makineler, borular ve turuncu alarm ışıkları.',arx:48,arz:44,start:{x:0,z:38},spawns:[[-40,-43,40,-40],[-46,-20,-43,20],[43,-20,46,20]],sky:0x100c08,fog:[0x1a1410,0.03],flash:0.9,build:bFactory},
   {id:'carnival',name:'Lunapark',emoji:'🎡',desc:'Dönme dolap, atlı karınca, sirk çadırı ve havai fişekler.',arx:48,arz:48,start:{x:0,z:40},spawns:[[-30,-46,30,-42],[-46,-20,-43,20],[43,-20,46,20]],sky:0x0d0a22,fog:[0x1a1033,0.02],flash:0.5,build:bCarnival},
+  {id:'mall',name:'AVM',emoji:'🛍️',desc:'Ortada havuz, iki yanda mağazalar, sütunlar. Zombiler vitrinlerin arasından geliyor.',arx:44,arz:56,start:{x:0,z:50},spawns:[[-13,-54,13,-50],[-14.5,-30,-12,-24],[12,-30,14.5,-24]],sky:0x24232b,fog:[0xcfc8bd,0.011],flash:0.5,build:bMall},
+  {id:'farm',name:'Çiftlik',emoji:'🌾',desc:'Gün batımı, kırmızı ambar, silolar, yel değirmeni ve mısır tarlaları. Ambarın samanlığına çık!',arx:54,arz:54,start:{x:0,z:48},spawns:[[-50,-52,50,-48],[-52,-8,-50,30],[50,-8,52,30]],sky:0xe9a876,fog:[0xe5b48e,0.012],flash:0,far:200,build:bFarm},
+  {id:'prison',name:'Hapishane',emoji:'⛓️',desc:'Hücre bloğu, arama ışıkları, gözetleme kuleleri. Alarm çalıyor!',arx:40,arz:52,start:{x:0,z:46},spawns:[[-36,-50,36,-44],[-39,-12,-30,-4],[30,-12,39,-4]],sky:0x05070a,fog:[0x0a0e14,0.026],flash:1.0,build:bPrison},
+  {id:'airport',name:'Havalimanı',emoji:'✈️',desc:'Check-in salonu, güvenlik hattı, kapı bekleme alanı ve pistte bekleyen uçak.',arx:46,arz:64,start:{x:0,z:58},spawns:[[-40,-62,40,-58],[-44,-4,-42,6],[42,-4,44,6]],sky:0x1c2430,fog:[0x9aa6b4,0.011],flash:0.3,far:200,build:bAirport},
+  {id:'bridge',name:'Köprü',emoji:'🌉',desc:'Gece, yanan tanker, terk edilmiş araçlar ve asma köprü kabloları.',arx:20,arz:70,start:{x:0,z:64},spawns:[[-18,-68,18,-62],[-19,-40,-13,-34],[13,-40,19,-34]],sky:0x080c18,fog:[0x121a2a,0.014],flash:1.1,far:320,build:bBridge},
   {id:'subway',name:'Metro İstasyonu',emoji:'🚇',desc:'Yeraltı peronu, duran bir tren, sütunlar ve karanlık tüneller.',arx:28,arz:62,start:{x:0,z:55},spawns:[[-18,-60,-6,-56],[6,-60,18,-56],[-6,-60,6,-50]],sky:0x040506,fog:[0x07090c,0.04],flash:1.1,build:bSubway}
 ];
 
@@ -8768,7 +9195,7 @@ function adopt(){
 function startWave(){
   H.wave++;H.phase=1;
   var n=Math.max(1,playerList().length);
-  H.toSpawn=Math.floor((6+H.wave*3.5)*(1+0.6*(n-1)));H.spawnT=0.5;
+  H.toSpawn=Math.floor((6+H.wave*3.5)*(1+0.6*(n-1))*(ACT==='horde'?2.2:1));H.spawnT=0.5;
 }
 function spawnZ(){
   var spt=pickSpawn();
@@ -8788,7 +9215,7 @@ function hostTick(dt){
   else if(H.phase===0){H.bt-=dt;if(H.bt<=0)startWave();}
   else if(H.phase===1){
     H.spawnT-=dt;
-    if(H.toSpawn>0&&H.spawnT<=0&&H.zs.length<MAXZ){spawnZ();H.toSpawn--;H.spawnT=Math.max(0.3,1.1-H.wave*0.05);}
+    if(H.toSpawn>0&&H.spawnT<=0&&H.zs.length<(ACT==='horde'?60:MAXZ)){spawnZ();H.toSpawn--;H.spawnT=ACT==='horde'?0.18:Math.max(0.3,1.1-H.wave*0.05);}
     if(H.toSpawn<=0&&H.zs.length===0){H.phase=0;H.bt=8;}
     if(pl.length&&!pl.some(function(p){return p.alive;})){H.phase=2;H.bt=7;}
   }else if(H.phase===2){
@@ -8881,15 +9308,16 @@ function applySnap(d){
   // dalga geçişleri
   var pw=S.pw,pp=S.pp;
   if(d.w<pw){ // sıfırlandı
-    S.score=0;S.kills=0;S.own=[true,false,false,false];S.wi=0;S.ammo=[12,32,6,30];setGun(0);reviveMe();
+    S.score=0;S.kills=0;S.own=ownInit();S.wi=0;S.ammo=ammoInit();setGun(0);reviveMe();modeReset();startLoadout();
   }else if(d.p===0&&pp===1){
-    if(!S.alive)reviveMe();else S.hp=Math.min(100,S.hp+40);
-    addDia(10);toast('Dalga bitti! +10 elmas 💎');
+    if(!S.alive)reviveMe();else if(ACT!=='hard')S.hp=Math.min(100,S.hp+40);
+    addDia(10);S.gren=Math.min(5,(S.gren||0)+1);if(ACT!=='hard')S.ammo=ammoInit();toast('Dalga bitti! +10 elmas 💎 +1 bomba 💣 cephane doldu');
   }
+  if(!STORY.on&&d.w>REC.wave){REC.wave=d.w;saveRec();}
   S.pw=d.w;S.pp=d.p;S.wave=d.w;S.phase=d.p;S.bt=d.b;S.left=d.l;
   var me=myPeer();
   if(d.dm&&d.dm[me]&&S.alive&&S.playing)takeDamage(d.dm[me]);
-  if(d.kl&&d.kl[me]){S.score+=20*d.kl[me];S.kills+=d.kl[me];addWallet(20*d.kl[me]);hitMark(true);}
+  if(d.kl&&d.kl[me]){S.score+=20*d.kl[me];S.kills+=d.kl[me];addWallet(20*d.kl[me]);hitMark(true);modeKills(d.kl[me]);}
   if(d.tr)setHelper(d.tr);else if(HLP){scene.remove(HLP.g);HLP=null;}
   if(d.cl>0&&performance.now()>=S.clapUntil){S.clapUntil=performance.now()+d.cl*1000+500;applause(d.cl);}
 }
@@ -8965,14 +9393,14 @@ var pending={},flushT=0;
 function takeDamage(a){
   if(S.ride)return;
   if(!S.alive)return;
-  S.hp-=a;sfxHurt();
+  if(ACT==='hard')a*=3;if(PERK==='hp')a*=0.85;S.hp-=a;sfxHurt();
   var v=$('dmgV');v.classList.add('on');setTimeout(function(){v.classList.remove('on');},60);
   if(S.hp<=0){S.hp=0;S.alive=false;S.firing=false;}
 }
 function spawnMe(){S.x=START.x+(Math.random()-.5)*8;S.z=START.z+(Math.random()-.5)*3;}
 function reviveMe(){S.alive=true;S.hp=100;spawnMe();S.y=EYE;S.vy=0;}
 function hitMark(kill){var h=$('hitm');h.style.color=kill?'#ff3b4e':'#fff';h.classList.add('on');setTimeout(function(){h.classList.remove('on');},90);}
-function reload(){var w=WEAPONS[S.wi];if(S.reloading>0||S.ammo[S.wi]>=w.mag)return;S.reloading=w.rel;sfxClick();}
+function reload(){var w=WEAPONS[S.wi];if(S.reloading>0||S.ammo[S.wi]>=w.mag)return;S.reloading=w.rel*(PERK==='rel'?0.65:1);sfxClick();}
 function shoot(now){
   if(S.ride)return;
   var w=WEAPONS[S.wi];
@@ -8987,7 +9415,7 @@ function shoot(now){
   var zg=[];for(var id in Z)if(!Z[id].dying)zg.push(Z[id].g);
   if(BOSS.on&&BOSS.g&&BOSS.state!=='dead'&&BOSS.state!=='none')zg.push(BOSS.g);
   var targets=zg.concat(solids),hitIds={};
-  var muz=origin.clone().addScaledVector(right,0.24).addScaledVector(up,-0.18).addScaledVector(fwd,0.7);
+  var muz=origin.clone().addScaledVector(right,(w.dual&&(S.fire%2===0))?-0.24:0.24).addScaledVector(up,-0.18).addScaledVector(fwd,0.7);
   for(var i=0;i<w.pel;i++){
     var d=fwd.clone().addScaledVector(right,(Math.random()-.5)*2*w.spr).addScaledVector(up,(Math.random()-.5)*2*w.spr).normalize();
     ray.set(origin,d);ray.far=70;
@@ -8996,7 +9424,7 @@ function shoot(now){
       var h=hits[0];end=h.point;
       var zid=h.object.userData.zid;
       if(zid!==undefined){
-        var dmg=w.dmg*(h.object.userData.head?2.5:1)*(S.dmgT>0?2:1);
+        var dmg=w.dmg*(h.object.userData.head?2.5:1)*(S.dmgT>0?2:1);if(ACT==='head'&&!h.object.userData.head)dmg=0;if(PERK==='dmg')dmg*=1.15;
         pending[zid]=(pending[zid]||0)+dmg;hitIds[zid]=1;puff(h.point,true,3);
       }else if(h.object.userData.boss){bossDamage(w.dmg*(S.dmgT>0?2:1));puff(h.point,true,3);}else puff(h.point,false,2);
     }else end=origin.clone().addScaledVector(d,60);
@@ -9007,9 +9435,63 @@ function shoot(now){
   if(S.ammo[S.wi]<=0)reload();
 }
 function switchWeapon(i){
+  if(ACT==='gungame'){toast('Silah Yarışı: silah öldürmelerle değişir');return;}
   var w=WEAPONS[i];
   if(!S.own[i]){if(S.score>=w.cost){S.score-=w.cost;S.own[i]=true;toast(w.n+' alındı');}else{toast('Yetmiyor: '+w.n+' '+w.cost+' TL, paran '+S.score+' TL');return;}}
   S.wi=i;S.reloading=0;setGun(i);sfxClick();
+}
+var GR=[];
+var grGeo=new T.SphereGeometry(0.12,8,6),grMat=new T.MeshStandardMaterial({color:0x2f3d2a,roughness:0.5,metalness:0.4});
+function throwGrenade(){
+  if(!S.playing||!S.alive||S.ride||S.shop||DLG.on||STORY.busy)return;
+  if(S.grCd>0)return;
+  if((S.gren||0)<=0){toast('Bomban bitti. Dalga sonunda +1 bomba');return;}
+  S.gren--;S.grCd=0.8;
+  var fwd=new T.Vector3();camera.getWorldDirection(fwd);
+  var m=new T.Mesh(grGeo,grMat);m.position.copy(camera.position).addScaledVector(fwd,0.6);m.position.y-=0.15;scene.add(m);
+  GR.push({m:m,v:fwd.clone().multiplyScalar(15).add(new T.Vector3(0,3.5,0)),t:1.7});
+  try{burst(0.12,900,0.2);}catch(e){}
+}
+function explodeGrenade(p){
+  var R=7,id,i;
+  for(id in Z){var zz=Z[id];if(zz.dying||!zz.g)continue;
+    var d=zz.g.position.distanceTo(p);
+    if(d<R){pending[id]=(pending[id]||0)+(20+160*(1-d/R));}}
+  try{if(BOSS.on&&BOSS.g&&BOSS.state!=='dead'&&BOSS.state!=='none'&&BOSS.g.position.distanceTo(p)<R+1)bossDamage(200);}catch(e){}
+  var dp=Math.hypot(S.x-p.x,S.z-p.z);if(S.alive&&dp<3.5)takeDamage(Math.round(30*(1-dp/3.5)));
+  for(i=0;i<16;i++)puff(new T.Vector3(p.x+(Math.random()-0.5)*3,p.y+Math.random()*1.6,p.z+(Math.random()-0.5)*3),i%2===0,3);
+  try{burst(0.7,140,0.55);}catch(e){}
+  hitMark(false);
+}
+function grenadesTick(dt){
+  for(var i=GR.length-1;i>=0;i--){
+    var g=GR[i];g.t-=dt;g.v.y-=18*dt;
+    var step=g.v.clone().multiplyScalar(dt),len=step.length();
+    if(len>1e-4){
+      ray.set(g.m.position,step.clone().normalize());ray.far=len+0.15;
+      var hh=ray.intersectObjects(solids,true);
+      if(hh.length){var nn=hh[0].face?hh[0].face.normal.clone().transformDirection(hh[0].object.matrixWorld):new T.Vector3(0,1,0);g.v.reflect(nn).multiplyScalar(0.45);}
+      else g.m.position.add(step);
+    }
+    if(g.m.position.y<0.12){g.m.position.y=0.12;g.v.y=Math.abs(g.v.y)*0.4;g.v.x*=0.7;g.v.z*=0.7;}
+    if(g.t<=0){explodeGrenade(g.m.position);scene.remove(g.m);GR.splice(i,1);}
+  }
+}
+function setAutoRun(on){
+  on=!!on;if(!!S.autoRun===on)return;
+  S.autoRun=on;var b=$('bRunLock');if(b)b.hidden=!(on&&TOUCH);
+  if(S.playing)toast(on?'🔒 Otomatik koşu kilitli':'🔓 Otomatik koşu kapandı');
+}
+function trySlide(){
+  if(!S.playing||!S.alive||S.ride||S.shop||DLG.on||STORY.busy)return;
+  if(S.sl>0||S.slCd>0)return;
+  if(S.y>(S.gf||EYE)+0.05)return;
+  var f=(keys.KeyW?1:0)-(keys.KeyS?1:0)-S.jy,r=(keys.KeyD?1:0)-(keys.KeyA?1:0)+S.jx;
+  var fx=-Math.sin(S.yaw),fz=-Math.cos(S.yaw),rx=Math.cos(S.yaw),rz=-Math.sin(S.yaw);
+  var l=Math.hypot(f,r);if(l<0.05){f=1;r=0;l=1;}
+  S.slx=(fx*f+rx*r)/l;S.slz=(fz*f+rz*r)/l;
+  S.sl=S.slT=0.85;S.slCd=1.1;
+  try{burst(0.35,260,0.25);}catch(e){}
 }
 function startRide(rr){
   S.ride={curve:rr.curve,t:0,v:2.2,vmax:rr.vmax||11,acc:rr.acc||5,len:rr.len||rr.curve.getLength()};S.firing=false;
@@ -9029,6 +9511,11 @@ function updatePlayer(dt,now){
   if(keys.ArrowLeft)S.yaw+=look;if(keys.ArrowRight)S.yaw-=look;
   if(keys.ArrowUp)S.pitch=Math.min(1.4,S.pitch+look);if(keys.ArrowDown)S.pitch=Math.max(-1.4,S.pitch-look);
   var moving=false;
+  if(S.slCd>0)S.slCd-=dt;
+  if(S.alive&&SET.auto&&S.jy<-0.9&&!S.autoRun)setAutoRun(true);
+  if(!S.alive&&S.autoRun)setAutoRun(false);
+  modeTick(dt);
+  if(S.grCd>0)S.grCd-=dt;grenadesTick(dt);
   if(S.rideCd>0)S.rideCd-=dt;
   if(S.alive&&S.ride){
     var RD=S.ride;RD.v=Math.min(RD.vmax,RD.v+RD.acc*dt);RD.t+=RD.v*dt/RD.len;
@@ -9042,8 +9529,12 @@ function updatePlayer(dt,now){
   }
   if(S.alive&&!S.ride){
     var f=(keys.KeyW?1:0)-(keys.KeyS?1:0)-S.jy,r=(keys.KeyD?1:0)-(keys.KeyA?1:0)+S.jx;
-    if(Math.abs(f)>0.05||Math.abs(r)>0.05){
-      moving=true;var l=Math.hypot(f,r),mg=Math.min(1,l),sp=((sprint||Math.hypot(S.jx,S.jy)>0.92)?9.8:6.3)*mg*dt;
+    if(S.sl>0){
+      moving=true;var k0=1-S.sl/S.slT,sps=12.5-(12.5-4.5)*k0*k0;S.sl-=dt;
+      if(keys.Space)S.sl=0;
+      S.x+=S.slx*sps*dt;S.z+=S.slz*sps*dt;resolve(S,PR,S.y-EYE);
+    }else if(Math.abs(f)>0.05||Math.abs(r)>0.05){
+      moving=true;var l=Math.hypot(f,r),mg=S.autoRun?1:Math.min(1,l),sp=((sprint||S.autoRun||Math.hypot(S.jx,S.jy)>0.92)?9.8:6.3)*(PERK==='spd'?1.08:1)*mg*dt;
       var fx=-Math.sin(S.yaw),fz=-Math.cos(S.yaw),rx=Math.cos(S.yaw),rz=-Math.sin(S.yaw);
       S.x+=(fx*f+rx*r)/l*sp;S.z+=(fz*f+rz*r)/l*sp;
       resolve(S,PR,S.y-EYE);
@@ -9057,10 +9548,11 @@ function updatePlayer(dt,now){
     if(S.firing&&WEAPONS[S.wi].auto)shoot(now);
   }else{S.y+= (0.45-S.y)*Math.min(1,dt*3);}
   var bob=moving&&S.y<=(S.gf||EYE)+0.001&&!S.ride?Math.sin(now/110)*0.035:0;
-  camera.position.set(S.x,S.y+bob,S.z);
-  camera.rotation.set(S.pitch,S.yaw,S.alive?0:0.6);
+  S.slk=(S.slk||0)+(((S.sl>0)?0.7:0)-(S.slk||0))*Math.min(1,dt*12);
+  camera.position.set(S.x,S.y+bob-S.slk,S.z);
+  camera.rotation.set(S.pitch,S.yaw,S.alive?S.slk*0.07:0.6);
   gun.position.z=-0.55+recoil*2;gun.position.y=-0.22+(moving?Math.sin(now/110)*0.006:0)-recoil*0.4;
-  gun.visible=S.alive&&!S.ride;
+  gun.visible=S.alive&&!S.ride;gunL.visible=gun.visible&&WEAPONS[S.wi].dual===true;gunL.position.set(-0.24,gun.position.y,gun.position.z);
   flushT-=dt;
   if(flushT<=0){flushT=0.1;var ks=Object.keys(pending);if(ks.length){send('hit',{h:ks.map(function(k){return[+k,Math.round(pending[k])];})});pending={};}}
 }
@@ -9071,6 +9563,7 @@ function menuCam(now){
 /* ================= HUD ================= */
 var hudT=0,_wh='';
 function banner(){
+  var mb=modeBanner();if(mb)return mb;
   if(STORY.on)return 'Bölüm '+STORY.ch+' / '+STORY_N+' · '+STORY.obj;
   if(S.phase===2)return 'Oyun bitti! Ulaşılan dalga: '+S.wave+'. '+S.bt+' sn sonra yeniden başlıyor';
   if(S.phase===0)return (S.wave===0?'Hazırlan! İlk dalga ':'Dalga '+S.wave+' bitti! Sonraki dalga ')+S.bt+' sn sonra';
@@ -9087,7 +9580,7 @@ function updateHud(dt){
   $('hpTxt').textContent='Can '+Math.round(S.hp);$('score').textContent=S.score+' TL · 💎 '+DIA;
   var w=WEAPONS[S.wi];
   $('ammo').textContent=S.reloading>0?'Şarjör değişiyor':S.ammo[S.wi]+' / '+w.mag;
-  $('wname').textContent=w.n+(S.dmgT>0?' · çifte hasar '+Math.ceil(S.dmgT)+' sn':'');
+  $('wname').textContent='💣'+(S.gren||0)+' · '+w.n+(S.dmgT>0?' · çifte hasar '+Math.ceil(S.dmgT)+' sn':'');
   if(S.shop)renderShop();
   var wh=WEAPONS.map(function(x,i){
     var cls=i===S.wi?'cur':(S.own[i]?'':(S.score>=x.cost?'can':''));
@@ -9146,13 +9639,17 @@ document.addEventListener('keydown',function(e){
   if(e.code==='KeyM'&&window.zlVoice)window.zlVoice.toggle();
   if(e.code==='KeyE')pressButton();
   if(e.code==='KeyR')reload();
-  if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);
+  var dg=e.code.match(/^Digit(\d)$/);if(dg)switchWeapon((+dg[1]+9)%10);
+  if(e.code==='KeyC'||e.code==='ControlLeft')trySlide();
+  if(e.code==='KeyX')setAutoRun(!S.autoRun);
+  if(e.code==='KeyG')throwGrenade();
+  if(e.code==='KeyH'){if(S.alive&&S.hp<100&&S.score>=HEAL_COST){S.score-=HEAL_COST;S.hp=100;sfxClick();toast('Can paketi kullanıldı');}else if(S.alive)toast(S.hp>=100?'Canın zaten dolu':'Can paketi için '+HEAL_COST+' TL gerek');}
 });
 document.addEventListener('keyup',function(e){keys[e.code]=false;});
 window.addEventListener('blur',function(){keys={};S.firing=false;});
 document.addEventListener('mousemove',function(e){
   if(!S.playing||!S.locked)return;
-  S.yaw-=e.movementX*0.0022;S.pitch=Math.max(-1.45,Math.min(1.45,S.pitch-e.movementY*0.0022));
+  S.yaw-=e.movementX*0.0022*SET.sens;S.pitch=Math.max(-1.45,Math.min(1.45,S.pitch-e.movementY*0.0022*SET.sens));
 });
 canvas.addEventListener('mousedown',function(e){
   if(!S.playing||e.button!==0)return;
@@ -9181,13 +9678,16 @@ if(TOUCH)document.body.classList.add('touch');
   stick.addEventListener('pointerup',endS);stick.addEventListener('pointercancel',endS);
   var lz=$('lookzone'),lid=null,lx=0,ly=0;
   lz.addEventListener('pointerdown',function(e){e.preventDefault();ac();if(DLG.on){dlgAdvance();return;}lid=e.pointerId;lz.setPointerCapture(lid);lx=e.clientX;ly=e.clientY;});
-  lz.addEventListener('pointermove',function(e){if(e.pointerId!==lid)return;S.yaw-=(e.clientX-lx)*0.006;S.pitch=Math.max(-1.45,Math.min(1.45,S.pitch-(e.clientY-ly)*0.006));lx=e.clientX;ly=e.clientY;});
+  lz.addEventListener('pointermove',function(e){if(e.pointerId!==lid)return;S.yaw-=(e.clientX-lx)*0.006*SET.sens;S.pitch=Math.max(-1.45,Math.min(1.45,S.pitch-(e.clientY-ly)*0.006*SET.sens));lx=e.clientX;ly=e.clientY;});
   function endL(e){if(e.pointerId===lid)lid=null;}
   lz.addEventListener('pointerup',endL);lz.addEventListener('pointercancel',endL);
   function hold(id,down,up){var b=$(id);b.addEventListener('pointerdown',function(e){e.preventDefault();ac();b.setPointerCapture(e.pointerId);down();});b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);}
   hold('bFire',function(){if(!S.playing)return;S.firing=true;shoot(performance.now());},function(){S.firing=false;});
   hold('bJump',function(){keys.Space=true;},function(){keys.Space=false;});
   hold('bReload',function(){reload();},function(){});
+  hold('bSlide',function(){trySlide();},function(){});
+  hold('bGren',function(){throwGrenade();},function(){});
+  hold('bRunLock',function(){setAutoRun(false);},function(){});
   hold('bUse',function(){pressButton();},function(){});
   $('wlist').addEventListener('pointerdown',function(e){var t=e.target.closest&&e.target.closest('span[data-i]');if(t)switchWeapon(+t.getAttribute('data-i'));});
 })();
@@ -9195,7 +9695,7 @@ if(TOUCH)document.body.classList.add('touch');
 /* ================= mağaza ================= */
 var CRATE_COST=300,HEAL_COST=100;
 var LOOT=[
-  {k:'w1',n:'SMG',w:22,c:'r-blue'},{k:'w2',n:'Pompalı',w:16,c:'r-purple'},{k:'w3',n:'AK',w:8,c:'r-gold'},
+  {k:'w1',n:'SMG',w:22,c:'r-blue'},{k:'w2',n:'Pompalı',w:16,c:'r-purple'},{k:'w3',n:'AK',w:8,c:'r-gold'},{k:'w4',n:'Çift Beretta',w:10,c:'r-purple'},{k:'w6',n:'Deagle',w:10,c:'r-purple'},{k:'w5',n:'AWP',w:5,c:'r-gold'},
   {k:'hp',n:'Can paketi (can tam dolar)',w:20,c:'r-green'},{k:'ammo',n:'Dolu cephane',w:14,c:'r-green'},
   {k:'dbl',n:'Çifte hasar (30 sn)',w:12,c:'r-purple'},{k:'tl',n:'150 TL geri',w:8,c:'r-blue'},{k:'skin',n:'Silah deseni',w:14,c:'r-gold'}];
 var crateBusy=false,crateTimer=null,toastT=null;
@@ -9206,7 +9706,7 @@ function renderShop(){
   var a=S.alive;
   setH($('shCrate'),'<span>Kasa aç</span><span>'+CRATE_COST+' TL</span>',!a||crateBusy||S.score<CRATE_COST);
   setH($('shHeal'),'<span>Can paketi (can tam dolar)</span><span>'+HEAL_COST+' TL</span>',!a||S.hp>=100||S.score<HEAL_COST);
-  [1,2,3].forEach(function(i){var w=WEAPONS[i];
+  [1,2,3,4,5,6,7,8,9].forEach(function(i){var w=WEAPONS[i];
     setH($('shW'+i),'<span>'+w.n+'</span><span>'+(S.own[i]?(S.wi===i?'kullanılıyor':'kuşan'):w.cost+' TL')+'</span>',!a||(!S.own[i]&&S.score<w.cost));});
 }
 function toggleShop(){
@@ -9217,6 +9717,7 @@ function closeShop(){S.shop=false;$('shop').hidden=true;}
 function rollLoot(){var t=0,i;for(i=0;i<LOOT.length;i++)t+=LOOT[i].w;var r=Math.random()*t;for(i=0;i<LOOT.length;i++){r-=LOOT[i].w;if(r<0)return LOOT[i];}return LOOT[0];}
 function applyLoot(l){
   if(l.k.charAt(0)==='w'){var i=+l.k.charAt(1);
+    if(ACT==='gungame'){S.score+=150;return 'Silah Yarışında silah değişmez, 150 TL iade edildi';}
     if(S.own[i]){S.score+=150;return l.n+' zaten sende, 150 TL iade edildi';}
     S.own[i]=true;S.wi=i;S.reloading=0;setGun(i);return 'Yeni silah: '+l.n;}
   if(l.k==='hp'){S.hp=100;return 'Canın tam doldu';}
@@ -9240,7 +9741,8 @@ function openCrate(){
 }
 $('shCrate').addEventListener('click',openCrate);
 $('shHeal').addEventListener('click',function(){if(S.alive&&S.hp<100&&S.score>=HEAL_COST){S.score-=HEAL_COST;S.hp=100;sfxClick();renderShop();}});
-[1,2,3].forEach(function(i){$('shW'+i).addEventListener('click',function(){
+[1,2,3,4,5,6,7,8,9].forEach(function(i){$('shW'+i).addEventListener('click',function(){
+  if(ACT==='gungame'){toast('Silah Yarışı: silah öldürmelerle değişir');return;}
   if(S.own[i]){S.wi=i;S.reloading=0;setGun(i);sfxClick();}
   else if(S.score>=WEAPONS[i].cost){S.score-=WEAPONS[i].cost;S.own[i]=true;S.wi=i;S.reloading=0;setGun(i);sfxClick();toast(WEAPONS[i].n+' alındı');}
   else toast('Yetmiyor: '+WEAPONS[i].n+' '+WEAPONS[i].cost+' TL, paran '+S.score+' TL');
@@ -9979,6 +10481,7 @@ $('startBtn').addEventListener('click',function(){getName();begin();});
 var CODES={DERS100:100,LAB200:200,SINIF300:300};
 function begin(mode){
   ac();
+  ACT=(mode==='story'||room)?'classic':MODE;
   var bc=String($('bonus').value||'').toUpperCase().replace(/[^A-Z0-9]/g,''),used={};
   try{used=JSON.parse(localStorage.getItem('zlUsed')||'{}')||{};}catch(e){}
   S.bonus=0;
@@ -9990,13 +10493,15 @@ function begin(mode){
   closeShop();
   $('menu').hidden=true;$('hud').hidden=false;
   setMapMode(mode==='story'?'story':'survival',roomMapId());
-  S.playing=true;S.startedAt=performance.now();S.alive=true;S.hp=100;S.score=(S.bonus||0)+STARTM;S.dmgT=0;S.kills=0;S.own=[true,false,false,false];S.wi=0;S.ammo=[12,32,6,30];S.reloading=0;
-  spawnMe();S.y=EYE;S.yaw=0;S.pitch=0;S.pw=0;S.pp=-1;S.noLock=TOUCH;S.jx=0;S.jy=0;
+  S.playing=true;S.startedAt=performance.now();S.alive=true;S.hp=100;S.score=(S.bonus||0)+STARTM;S.dmgT=0;S.kills=0;S.own=ownInit();S.wi=0;S.ammo=ammoInit();S.reloading=0;
+  spawnMe();S.y=EYE;S.yaw=0;S.pitch=0;S.pw=0;S.pp=-1;modeReset();S.noLock=TOUCH;S.jx=0;S.jy=0;
   lastSnap=null;wasHost=false;
   for(var id in Z){scene.remove(Z[id].g);delete Z[id];}
   if(HLP){scene.remove(HLP.g);HLP=null;}
-  setGun(0);keys={};
+  startLoadout();keys={};
   if(S.bonus)toast('Bonus kodu: +'+S.bonus+' TL');
+  applySettings();
+  if(ACT!=='classic')toast(getMode(ACT).emoji+' '+getMode(ACT).name+' modu');
   $('touch').hidden=!TOUCH;
   if(!TOUCH)lockPointer();
   if(room)room.presence({pl:1,n:S.name,lk:LOOKCODE,mp:MAPSEL}).catch(function(){});
@@ -10028,6 +10533,67 @@ function renderMaps(){
 $('mapBtn').addEventListener('click',function(){renderMaps();$('maps').hidden=false;});
 $('mapClose').addEventListener('click',function(){$('maps').hidden=true;});
 refreshMapBtn();
+MODE=getMode(lsGet('zlMode')||'classic').id;
+function refreshModeBtn(){var m=getMode(MODE);$('modeBtn').textContent='🎮 Mod: '+m.emoji+' '+m.name;}
+function renderModes(){
+  var list=$('modeList');list.innerHTML='';
+  MODES.forEach(function(m){
+    var b=document.createElement('button');b.type='button';b.className='mcard'+(m.id===MODE?' sel':'');
+    var t=document.createElement('b'),ds=document.createElement('small');
+    t.textContent=m.emoji+' '+m.name;ds.textContent=m.desc;b.appendChild(t);b.appendChild(ds);
+    b.addEventListener('click',function(){MODE=m.id;lsSet('zlMode',m.id);refreshModeBtn();$('modes').hidden=true;});
+    list.appendChild(b);
+  });
+}
+$('modeBtn').addEventListener('click',function(){renderModes();$('modes').hidden=false;});
+$('modeClose').addEventListener('click',function(){$('modes').hidden=true;});
+refreshModeBtn();
+LOADW=parseInt(lsGet('zlLoadW'),10);if(isNaN(LOADW)||!WEAPONS[LOADW]||WEAPONS[LOADW].cost>FREE_START)LOADW=0;
+PERK=lsGet('zlPerk')||'none';if(!PERKS.some(function(p){return p.id===PERK;}))PERK='none';
+function refreshArmBtn(){$('armBtn').textContent='🔫 Silah Deposu · '+WEAPONS[LOADW].n+(PERK!=='none'?' · '+PERKS.filter(function(p){return p.id===PERK;})[0].name:'');}
+function renderArmory(){
+  var al=$('armList'),pl=$('perkList');al.innerHTML='';pl.innerHTML='';
+  WEAPONS.forEach(function(w,i){
+    var locked=w.cost>FREE_START,b=document.createElement('button');b.type='button';b.className='mcard'+(i===LOADW?' sel':'');b.disabled=locked;if(locked)b.style.opacity='.5';
+    var t=document.createElement('b'),ds=document.createElement('small');
+    var dps=Math.round(w.dmg*w.pel/Math.max(0.05,w.rate));
+    t.textContent=(i+1)+' · '+w.n;
+    ds.textContent='Hasar '+w.dmg+(w.pel>1?' x'+w.pel:'')+' · DPS ~'+dps+' · Şarjör '+w.mag+' · '+(w.auto?'otomatik':'tek atış')+' · '+(locked?w.cost+' TL (oyunda al)':(w.cost?w.cost+' TL değerinde, bedava':'bedava'));
+    b.appendChild(t);b.appendChild(ds);
+    b.addEventListener('click',function(){LOADW=i;lsSet('zlLoadW',String(i));refreshArmBtn();renderArmory();});
+    al.appendChild(b);
+  });
+  PERKS.forEach(function(p){
+    var b=document.createElement('button');b.type='button';b.className='mcard'+(p.id===PERK?' sel':'');
+    var t=document.createElement('b'),ds=document.createElement('small');t.textContent=p.name;ds.textContent=p.desc;b.appendChild(t);b.appendChild(ds);
+    b.addEventListener('click',function(){PERK=p.id;lsSet('zlPerk',p.id);refreshArmBtn();renderArmory();});
+    pl.appendChild(b);
+  });
+}
+$('armBtn').addEventListener('click',function(){renderArmory();$('armory').hidden=false;});
+$('armClose').addEventListener('click',function(){$('armory').hidden=true;});
+refreshArmBtn();
+var DIFFN=['😌 Kolay · zombiler %25 zayıf, hasar %30 az','😐 Normal','😈 Zor · zombiler %30 sert, hasar %30 fazla'];
+function renderSet(){
+  $('setSens').value=SET.sens;$('setSensV').textContent=SET.sens.toFixed(1)+'x';
+  $('setFov').value=SET.fov;$('setFovV').textContent=SET.fov+'°';
+  $('setAuto').textContent='Otomatik koşu (joystick ileri): '+(SET.auto?'AÇIK':'KAPALI');
+  var dl=$('diffList');dl.innerHTML='';
+  DIFFN.forEach(function(t,i){var b=document.createElement('button');b.type='button';b.className='mcard'+(SET.diff===i?' sel':'');b.textContent=t;b.addEventListener('click',function(){SET.diff=i;saveSet();renderSet();});dl.appendChild(b);});
+}
+$('setSens').addEventListener('input',function(){SET.sens=+this.value;saveSet();renderSet();});
+$('setFov').addEventListener('input',function(){SET.fov=+this.value;saveSet();applySettings();renderSet();});
+$('setAuto').addEventListener('click',function(){SET.auto=SET.auto?0:1;saveSet();renderSet();});
+$('setBtn').addEventListener('click',function(){renderSet();$('settings').hidden=false;});
+$('setClose').addEventListener('click',function(){$('settings').hidden=true;});
+function renderRec(){
+  var rl=$('recList');rl.innerHTML='';
+  [['🌊 En yüksek dalga',REC.wave],['🧟 Toplam öldürme',REC.kills],['🔥 En uzun seri',REC.combo],['⏱️ Zaman Saldırısı rekoru (öldürme)',REC.time]].forEach(function(r){
+    var d=document.createElement('div');d.className='mcard';var b=document.createElement('b');b.textContent=r[0]+': '+r[1];d.appendChild(b);rl.appendChild(d);});
+}
+$('recBtn').addEventListener('click',function(){renderRec();$('records').hidden=false;});
+$('recClose').addEventListener('click',function(){$('records').hidden=true;});
+applySettings();
 function beginStory(ch){
   if(room){try{room.leave();}catch(e){}room=null;roomCode='';$('roster').hidden=true;}
   begin('story');
