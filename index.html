@@ -205,6 +205,18 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
 #crOv .cr-t{flex:0 0 140px;font-size:.78rem}
 .cr-btns{display:flex;gap:10px;justify-content:center}
 .cr-btns .btn{min-width:130px}
+
+.cbox.adm-wide{width:min(1000px,100%)}
+#adminBody:not([hidden]){display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.7fr);gap:16px}
+.admL,.admR{display:flex;flex-direction:column;gap:8px;min-width:0}
+@media(max-width:760px){#adminBody:not([hidden]){grid-template-columns:1fr}}
+.admT{display:flex;flex-direction:column;gap:3px}
+.admT .cr-t{cursor:pointer;height:84px}
+.admT.own .cr-t{outline:3px solid #7cff4f}
+.admA{display:flex;gap:3px}
+.admA button{flex:1;padding:4px 2px;border-radius:6px;border:1px solid var(--line);background:#161c23;color:var(--ink);font:inherit;font-size:.66rem}
+.admA button.on{border-color:#ffd23f;color:#ffd23f}
+#daily{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:6000;background:#0b0f16;color:#fff;border:2px solid #ffd23f;border-radius:14px;padding:10px 16px;font-weight:700;box-shadow:0 0 24px #ffd23f88;text-align:center}
 </style>
 </head>
 <body>
@@ -272,6 +284,7 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
         <div class="btns"><button class="btn main" id="admEnter" type="button">Gir</button></div>
       </div>
       <div id="adminBody" hidden>
+      <div class="admL">
         <div class="wnote" id="admNow" style="margin:0 0 10px"></div>
         <label for="admTl">Cüzdan parası (TL)</label>
         <div class="row"><input id="admTl" inputmode="numeric" autocomplete="off"><button class="btn" id="admTlSet" type="button">Ayarla</button></div>
@@ -282,6 +295,15 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
         <label for="admStart">Oyuna başlangıç parası (oyun içi TL)</label>
         <div class="row"><input id="admStart" inputmode="numeric" autocomplete="off"><button class="btn" id="admStartSet" type="button">Ayarla</button></div>
         <div class="quick"><button class="btn" type="button" data-k="st" data-v="500">+500</button><button class="btn" type="button" data-k="st" data-v="5000">+5.000</button></div>
+      </div>
+      <div class="admR">
+        <div class="wtop"><b>🎁 Kasadan çıkan eşyalar</b></div>
+        <input id="admQ" type="search" autocomplete="off" placeholder="Eşya ara...">
+        <div class="cr-fil" id="admFil"></div>
+        <div class="wnote" id="admForce" style="margin:4px 0">Dokun: eşyayı ver / geri al · Tak · 🎯 Sonraki kasada çıksın</div>
+        <div class="cr-pool" id="admPool" style="max-height:54vh"></div>
+        <div class="quick" id="admBulk"></div>
+      </div>
       </div>
       <button class="btn" id="admClose" type="button">Kapat</button>
     </div>
@@ -313,6 +335,7 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
       <input id="setFov" type="range" min="60" max="100" step="1">
       <label>Zorluk</label>
       <div id="diffList" style="display:grid;gap:8px"></div>
+      <button class="btn" id="setAdm" type="button" style="margin-top:10px;width:100%">🔧 Yönetici paneli</button>
       <button class="btn" id="setGfx" type="button" style="margin-top:10px;width:100%"></button>
       <button class="btn" id="setClose" type="button" style="margin-top:10px">Kapat</button>
     </div>
@@ -10766,7 +10789,9 @@ function openMenuCrate(idx){
   var c=CRATES[idx];if(cBusy||(c.dia?DIA:WALLET)<c.p)return;
   if(c.dia){DIA-=c.p;saveDia();}else WALLET-=c.p;
   cBusy=true;
-  var odds=c.dia?randOdds():c.odds,it=rollCrate(odds),dup=!!OWN[it.id];
+  var odds=c.dia?randOdds():c.odds,it=rollCrate(odds);
+  if(ADM_FORCE){var fi=admFind(ADM_FORCE);if(fi){it=(fi.r===undefined)?Object.assign({},fi,{r:0}):fi;}ADM_FORCE=null;}
+  var dup=!!OWN[it.id];
   if(dup)WALLET+=REFUND[it.r];else OWN[it.id]=1;
   saveWallet();saveLook();
   clearTimeout(cTimer);cancelAnimationFrame(cRaf);
@@ -10815,13 +10840,13 @@ function adminRefresh(){
 function adminOpen(){$('admin').hidden=false;$('adminLogin').hidden=false;$('adminBody').hidden=true;$('admCode').value='';$('admMsg').textContent='';}
 function adminEnter(){
   var code=String($('admCode').value||'').replace(/\D/g,'');
-  if(code==='27442744'){$('adminLogin').hidden=true;$('adminBody').hidden=false;$('admCode').value='';adminRefresh();}
+  if(code==='27442744'||code==='2744'){$('adminLogin').hidden=true;$('adminBody').hidden=false;$('admCode').value='';$('admin').querySelector('.cbox').classList.add('adm-wide');adminRefresh();renderAdmItems();}
   else $('admMsg').textContent='Yanlış kod.';
 }
 $('adminDot').addEventListener('click',adminOpen);
 $('admEnter').addEventListener('click',adminEnter);
 $('admCode').addEventListener('keydown',function(e){if(e.key==='Enter')adminEnter();});
-$('admClose').addEventListener('click',function(){$('admin').hidden=true;$('adminBody').hidden=true;$('adminLogin').hidden=false;});
+$('admClose').addEventListener('click',function(){$('admin').hidden=true;$('adminBody').hidden=true;$('adminLogin').hidden=false;$('admin').querySelector('.cbox').classList.remove('adm-wide');});
 $('admTlSet').addEventListener('click',function(){WALLET=parseNum($('admTl').value);saveWallet();adminRefresh();});
 $('admDiaSet').addEventListener('click',function(){DIA=parseNum($('admDia').value);saveDia();adminRefresh();});
 $('admStartSet').addEventListener('click',function(){STARTM=parseNum($('admStart').value);lsSet('zlStart',String(STARTM));adminRefresh();});
@@ -10834,6 +10859,48 @@ $('adminBody').addEventListener('click',function(e){
   else if(k==='st'){STARTM=Math.min(STARTM+v,1000000000000);lsSet('zlStart',String(STARTM));}
   adminRefresh();
 });
+
+/* ===== admin: kasa eşyalarını seç ===== */
+var ADM_FORCE=null,admRar=-1,admSrc='ex';
+function admFind(id){var a=EX.concat(ITEMS),i;for(i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+function admList(){
+  var q=($('admQ').value||'').toLowerCase().trim(),a=admSrc==='ex'?EX.slice():(admSrc==='shop'?ITEMS.slice():EX.concat(ITEMS));
+  return a.filter(function(x){var r=x.r||0;return (admRar<0||r===admRar)&&(!q||x.n.toLowerCase().indexOf(q)>=0||(SLOTN[x.slot]||'').toLowerCase().indexOf(q)>=0);}).sort(function(a,b){return (b.r||0)-(a.r||0);});
+}
+function renderAdmItems(){
+  var fil=$('admFil'),pl=$('admPool'),bk=$('admBulk');fil.innerHTML='';pl.innerHTML='';bk.innerHTML='';
+  [['ex','Kasa'],['shop','Mağaza'],['all','Hepsi']].forEach(function(s){var b=document.createElement('button');b.type='button';b.textContent=s[1];if(admSrc===s[0])b.className='sel';b.addEventListener('click',function(){admSrc=s[0];renderAdmItems();});fil.appendChild(b);});
+  ['Tüm nadirlik'].concat(RARN).forEach(function(nm,i){var b=document.createElement('button');b.type='button';b.textContent=nm;if(admRar===i-1)b.className='sel';if(i)b.style.color=RARC[i-1];b.addEventListener('click',function(){admRar=i-1;renderAdmItems();});fil.appendChild(b);});
+  var list=admList();
+  list.forEach(function(x){
+    var y=(x.r===undefined)?Object.assign({},x,{r:0}):x,w=document.createElement('div');w.className='admT'+(OWN[x.id]?' own':'');
+    var t=crTile(y);t.addEventListener('click',function(){if(OWN[x.id])delete OWN[x.id];else OWN[x.id]=1;saveLook();renderWardrobe();renderAdmItems();});
+    if(OWN[x.id]){var o=document.createElement('span');o.className='cr-own';o.textContent='✓';t.appendChild(o);}
+    var ac=document.createElement('div');ac.className='admA';
+    var eq=document.createElement('button');eq.type='button';eq.textContent='Tak';eq.addEventListener('click',function(){OWN[x.id]=1;CL().eq[x.slot]=x.id;saveLook();refreshAll();renderAdmItems();});
+    var fr=document.createElement('button');fr.type='button';fr.textContent='🎯 Kasa';if(ADM_FORCE===x.id)fr.className='on';
+    fr.addEventListener('click',function(){ADM_FORCE=(ADM_FORCE===x.id)?null:x.id;renderAdmItems();});
+    ac.appendChild(eq);ac.appendChild(fr);w.appendChild(t);w.appendChild(ac);pl.appendChild(w);
+  });
+  $('admForce').textContent=(ADM_FORCE&&admFind(ADM_FORCE)?'🎯 Sonraki kasada çıkacak: '+admFind(ADM_FORCE).n+' · ':'')+list.length+' eşya · dokun: ver / geri al';
+  [['Görünenleri ver',function(){list.forEach(function(x){OWN[x.id]=1;});}],['Görünenleri al',function(){list.forEach(function(x){delete OWN[x.id];});}],['Her şeyi ver',function(){EX.concat(ITEMS).forEach(function(x){OWN[x.id]=1;});}]].forEach(function(bb){
+    var b=document.createElement('button');b.className='btn';b.type='button';b.textContent=bb[0];b.addEventListener('click',function(){bb[1]();saveLook();renderWardrobe();renderAdmItems();});bk.appendChild(b);});
+}
+$('admQ').addEventListener('input',renderAdmItems);
+$('setAdm').addEventListener('click',function(){$('settings').hidden=true;adminOpen();});
+/* ===== günlük ödül ===== */
+(function(){
+  try{
+    var d=new Date(),key=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),last=lsGet('zlDaily');
+    if(last===key)return;
+    var y=new Date(d.getTime()-86400000),yk=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate(),st=parseInt(lsGet('zlStreak'),10)||0;
+    st=(last===yk)?Math.min(st+1,7):1;
+    var tl=200*st,dia=3*st;WALLET+=tl;DIA+=dia;saveWallet();saveDia();lsSet('zlDaily',key);lsSet('zlStreak',String(st));
+    $('wallet').textContent=moneyText();
+    var el=document.createElement('div');el.id='daily';el.textContent='🎁 Günlük ödül! '+st+'. gün: +'+tl+' TL, +'+dia+' 💎'+(st<7?' · yarın daha fazlası':' · maksimum seri!');
+    document.body.appendChild(el);setTimeout(function(){el.remove();},5000);
+  }catch(e){}
+})();
 
 $('crateClose').addEventListener('click',function(){$('crates').hidden=true;});
 
