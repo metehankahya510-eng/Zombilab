@@ -18,201 +18,41 @@ window.addEventListener('appinstalled', function() {
 });
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* Zombi Lab yerel hesap katmanı. Oyun verileri kullanıcı adına göre ayrılır. */
-(function () {
-  'use strict';
-  var DB_KEY = 'zombilab.auth.db.v1';
-  var SESSION_KEY = 'zombilab.auth.session.v1';
-  var ACCOUNT_PREFIX = '__zombilab_user__:';
-  var storageProto = Storage.prototype;
-  var rawGet = storageProto.getItem;
-  var rawSet = storageProto.setItem;
-  var rawRemove = storageProto.removeItem;
-  var rawKey = storageProto.key;
-  var rawLength = Object.getOwnPropertyDescriptor(storageProto, 'length').get;
-  var local = window.localStorage;
-
-  function readRaw(key) { return rawGet.call(local, key); }
-  function writeRaw(key, value) { rawSet.call(local, key, value); }
-  function removeRaw(key) { rawRemove.call(local, key); }
-  function accountKey(uid, key) { return ACCOUNT_PREFIX + uid + ':' + key; }
-  function activeUid() { return readRaw(SESSION_KEY) || ''; }
-  function mapKey(storage, key) {
-    var k = String(key);
-    if (storage !== local || !/^zl[A-Za-z0-9_-]*$/.test(k)) return k;
-    var uid = activeUid();
-    return uid ? accountKey(uid, k) : k;
-  }
-
-  /* Oyunun mevcut localStorage kodunu değiştirmeden kayıtları hesap bazında ayır. */
-  storageProto.getItem = function (key) { return rawGet.call(this, mapKey(this, key)); };
-  storageProto.setItem = function (key, value) { return rawSet.call(this, mapKey(this, key), value); };
-  storageProto.removeItem = function (key) { return rawRemove.call(this, mapKey(this, key)); };
-
-  function readDb() {
-    try {
-      var db = JSON.parse(readRaw(DB_KEY) || 'null');
-      if (db && db.version === 1 && Array.isArray(db.users)) return db;
-    } catch (e) {}
-    return { version: 1, users: [] };
-  }
-  function writeDb(db) { writeRaw(DB_KEY, JSON.stringify(db)); }
-  function findUserById(db, uid) {
-    for (var i = 0; i < db.users.length; i++) if (db.users[i].uid === uid) return db.users[i];
-    return null;
-  }
-  function getSignedInUser() {
-    var uid = activeUid();
-    return uid ? findUserById(readDb(), uid) : null;
-  }
-  function randomBytes(size) {
-    var bytes = new Uint8Array(size);
-    window.crypto.getRandomValues(bytes);
-    return bytes;
-  }
-  function toBase64(bytes) {
-    var binary = '';
-    for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return window.btoa(binary);
-  }
-  function fromBase64(value) {
-    var binary = window.atob(value);
-    var bytes = new Uint8Array(binary.length);
-    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return bytes;
-  }
-  function newUid() {
-    var b = randomBytes(16), out = '';
-    for (var i = 0; i < b.length; i++) out += b[i].toString(16).padStart(2, '0');
-    return out;
-  }
-  function passwordBytes(password) { return new TextEncoder().encode(String(password)); }
-  async function derivePassword(password, saltB64) {
-    if (!window.crypto || !window.crypto.subtle) throw new Error('Güvenli şifreleme kullanılamıyor. Siteyi HTTPS üzerinden aç.');
-    var material = await window.crypto.subtle.importKey('raw', passwordBytes(password), 'PBKDF2', false, ['deriveBits']);
-    var bits = await window.crypto.subtle.deriveBits({
-      name: 'PBKDF2',
-      salt: fromBase64(saltB64),
-      iterations: 120000,
-      hash: 'SHA-256'
-    }, material, 256);
-    return toBase64(new Uint8Array(bits));
-  }
-  function sameHash(a, b) {
-    try {
-      var aa = fromBase64(a), bb = fromBase64(b);
-      if (aa.length !== bb.length) return false;
-      var diff = 0;
-      for (var i = 0; i < aa.length; i++) diff |= aa[i] ^ bb[i];
-      return diff === 0;
-    } catch (e) { return false; }
-  }
-  function cleanUsername(value) {
-    return String(value || '').trim().normalize('NFC');
-  }
-  function validateUsername(value) {
-    var name = cleanUsername(value);
-    if (!/^[\p{L}\p{N}._-]{3,18}$/u.test(name)) {
-      throw new Error('Hesap adı 3–18 karakter olmalı. Harf, rakam, nokta, tire ve alt çizgi kullanabilirsin.');
-    }
-    return name;
-  }
-  function validatePassword(value) {
-    var password = String(value || '');
-    if (password.length < 6) throw new Error('Şifre en az 6 karakter olmalı.');
-    if (password.length > 128) throw new Error('Şifre en fazla 128 karakter olabilir.');
-    return password;
-  }
-  function copyLegacyData(uid) {
-    var entries = [], copied = [];
-    var length = rawLength.call(local);
-    for (var i = 0; i < length; i++) {
-      var key = rawKey.call(local, i);
-      if (key && /^zl[A-Za-z0-9_-]*$/.test(key)) entries.push([key, readRaw(key)]);
-    }
-    try {
-      for (var j = 0; j < entries.length; j++) {
-        var dest = accountKey(uid, entries[j][0]);
-        writeRaw(dest, entries[j][1]);
-        copied.push(dest);
-      }
-    } catch (e) {
-      for (var k = 0; k < copied.length; k++) removeRaw(copied[k]);
-      throw new Error('Eski oyun kayıtları hesaba aktarılamadı. Tarayıcı depolama alanında yer açıp tekrar dene.');
-    }
-    return entries.map(function (entry) { return entry[0]; });
-  }
-  function removeLegacyData(keys) {
-    for (var i = 0; i < keys.length; i++) removeRaw(keys[i]);
-  }
-  function normalizeUserForLogin(value) { return cleanUsername(value).toLowerCase(); }
-
-  var api = {
-    hasAccounts: function () { return readDb().users.length > 0; },
-    isSignedIn: function () { return !!getSignedInUser(); },
-    getCurrentAccount: function () {
-      var user = getSignedInUser();
-      return user ? { username: user.username, createdAt: user.createdAt } : null;
-    },
-    register: async function (username, password) {
-      var name = validateUsername(username);
-      var pass = validatePassword(password);
-      var db = readDb();
-      var nameKey = normalizeUserForLogin(name);
-      if (db.users.some(function (u) { return normalizeUserForLogin(u.username) === nameKey; })) {
-        throw new Error('Bu hesap adı zaten kullanılıyor. Başka bir ad dene.');
-      }
-      var uid = newUid();
-      var salt = toBase64(randomBytes(16));
-      var hash = await derivePassword(pass, salt);
-      var legacyKeys = [];
-      if (db.users.length === 0) legacyKeys = copyLegacyData(uid);
-      var record = { uid: uid, username: name, salt: salt, passwordHash: hash, createdAt: Date.now() };
-      db.users.push(record);
-      try {
-        writeDb(db);
-      } catch (e) {
-        for (var i = 0; i < legacyKeys.length; i++) removeRaw(accountKey(uid, legacyKeys[i]));
-        throw new Error('Hesap kaydedilemedi. Tarayıcı depolama alanında yer açıp tekrar dene.');
-      }
-      removeLegacyData(legacyKeys);
-      writeRaw(SESSION_KEY, uid);
-      if (localStorage.getItem('zlName') === null) localStorage.setItem('zlName', name);
-      return { username: name };
-    },
-    login: async function (username, password) {
-      var nameKey = normalizeUserForLogin(username);
-      var db = readDb();
-      var user = db.users.filter(function (u) { return normalizeUserForLogin(u.username) === nameKey; })[0];
-      if (!user) throw new Error('Hesap adı veya şifre yanlış.');
-      var hash = await derivePassword(String(password || ''), user.salt);
-      if (!sameHash(hash, user.passwordHash)) throw new Error('Hesap adı veya şifre yanlış.');
-      writeRaw(SESSION_KEY, user.uid);
-      return { username: user.username };
-    },
-    changePassword: async function (currentPassword, newPassword) {
-      var user = getSignedInUser();
-      if (!user) throw new Error('Önce hesabına giriş yapmalısın.');
-      var currentHash = await derivePassword(String(currentPassword || ''), user.salt);
-      if (!sameHash(currentHash, user.passwordHash)) throw new Error('Mevcut şifre yanlış.');
-      var pass = validatePassword(newPassword);
-      var salt = toBase64(randomBytes(16));
-      var hash = await derivePassword(pass, salt);
-      var db = readDb();
-      var stored = findUserById(db, user.uid);
-      if (!stored) throw new Error('Hesap bulunamadı. Tekrar giriş yap.');
-      stored.salt = salt;
-      stored.passwordHash = hash;
-      stored.passwordUpdatedAt = Date.now();
-      writeDb(db);
-      return true;
-    },
-    logout: function () { removeRaw(SESSION_KEY); },
-    getAccountCount: function () { return readDb().users.length; }
-  };
-  window.ZombiAuth = api;
-  if (api.isSignedIn()) document.documentElement.classList.add('zl-authenticated');
+(function(){
+'use strict';
+var URL='https://gupvqxzvidljztrlbvqp.supabase.co';
+var KEY='sb_publishable_nthZMIOAgN9J0QjC4gs-ig_2RtOp61j';
+var TABLE='zombilab_player_saves', PREFIX='__zombilab_user__:';
+var st=localStorage, p=Storage.prototype, get=p.getItem, set=p.setItem, rem=p.removeItem, key=p.key, len=Object.getOwnPropertyDescriptor(p,'length').get;
+var client=null, session=null, user=null, timer=0, busy=false, readyResolve;
+var ready=new Promise(function(r){readyResolve=r;});
+function akey(uid,k){return PREFIX+uid+':'+k;}
+function mapped(s,k){k=String(k);return s===st&&/^zl[A-Za-z0-9_-]*$/.test(k)&&session&&session.user?akey(session.user.id,k):k;}
+function email(n){var b=new TextEncoder().encode(String(n).trim().normalize('NFC').toLowerCase()),h='';for(var i=0;i<b.length;i++)h+=b[i].toString(16).padStart(2,'0');return 'u'+h+'@accounts.zombilab.invalid';}
+function uname(v){var n=String(v||'').trim().normalize('NFC');if(!/^[\p{L}\p{N}._-]{3,18}$/u.test(n))throw Error('Hesap adı 3–18 karakter olmalı.');return n;}
+function pass(v){v=String(v||'');if(v.length<6||v.length>128)throw Error('Şifre 6–128 karakter arasında olmalı.');return v;}
+function name(){return user&&user.user_metadata&&user.user_metadata.username||get.call(st,'zombilab.cloud.username.v1')||'Oyuncu';}
+function collect(onlyLegacy){var o={},pre=session&&session.user?PREFIX+session.user.id+':':'';for(var i=0,n=len.call(st);i<n;i++){var k=key.call(st,i);if(!k)continue;if(onlyLegacy&&/^zl[A-Za-z0-9_-]*$/.test(k))o[k]=get.call(st,k);else if(!onlyLegacy&&pre&&k.indexOf(pre)===0)o[k.slice(pre.length)]=get.call(st,k);}return o;}
+async function saveNow(){if(!client||!session||busy)return;busy=true;try{var r=await client.from(TABLE).upsert({user_id:session.user.id,save_data:collect(false),updated_at:new Date().toISOString()},{onConflict:'user_id'});if(r.error)throw r.error;}catch(e){console.warn('Cloud save:',e);}finally{busy=false;}}
+function schedule(){if(!session)return;clearTimeout(timer);timer=setTimeout(saveNow,1300);}
+async function restore(){if(!session)return;var r=await client.from(TABLE).select('save_data').eq('user_id',session.user.id).maybeSingle();if(r.error)throw r.error;var d=r.data&&r.data.save_data;if(d&&typeof d==='object'){Object.keys(d).forEach(function(k){if(/^zl[A-Za-z0-9_-]*$/.test(k)&&typeof d[k]==='string')set.call(st,akey(session.user.id,k),d[k]);});}else{var old=collect(true);Object.keys(old).forEach(function(k){set.call(st,akey(session.user.id,k),old[k]);});await saveNow();}}
+p.getItem=function(k){return get.call(this,mapped(this,k));};
+p.setItem=function(k,v){set.call(this,mapped(this,k),v);if(this===st&&/^zl[A-Za-z0-9_-]*$/.test(String(k)))schedule();};
+p.removeItem=function(k){rem.call(this,mapped(this,k));if(this===st&&/^zl[A-Za-z0-9_-]*$/.test(String(k)))schedule();};
+window.addEventListener('pagehide',function(){if(session)saveNow();});
+var api={
+ready:ready,hasAccounts:function(){return false;},
+isSignedIn:function(){return !!(session&&session.user);},
+getCurrentAccount:function(){return session&&session.user?{username:name()}:null;},
+register:async function(n,pw){n=uname(n);var r=await client.auth.signUp({email:email(n),password:pass(pw),options:{data:{username:n}}});if(r.error)throw Error(r.error.message);session=r.data.session;user=r.data.user;if(!session)throw Error('Supabase ayarında Email OTP/Confirm email kapatılmalı. Authentication > Providers > Email.');set.call(st,'zombilab.cloud.username.v1',n);var old=collect(true);Object.keys(old).forEach(function(k){set.call(st,akey(session.user.id,k),old[k]);});await saveNow();return{username:n};},
+login:async function(n,pw){n=uname(n);var r=await client.auth.signInWithPassword({email:email(n),password:pass(pw)});if(r.error)throw Error('Hesap adı veya şifre yanlış.');session=r.data.session;user=r.data.user;set.call(st,'zombilab.cloud.username.v1',n);await restore();return{username:n};},
+changePassword:async function(cur,next){if(!session)throw Error('Önce giriş yap.');var n=name(),v=await client.auth.signInWithPassword({email:email(n),password:pass(cur)});if(v.error)throw Error('Mevcut şifre yanlış.');var r=await client.auth.updateUser({password:pass(next)});if(r.error)throw Error(r.error.message);return true;},
+logout:async function(){await saveNow();await client.auth.signOut();session=null;user=null;rem.call(st,'zombilab.cloud.username.v1');}
+};
+window.ZombiAuth=api;
+try{if(!window.supabase)throw Error('Supabase kitaplığı yüklenemedi');client=window.supabase.createClient(URL,KEY);client.auth.onAuthStateChange(function(e,s){session=s;user=s&&s.user||null;});client.auth.getSession().then(async function(r){if(r.error)throw r.error;session=r.data.session;user=session&&session.user||null;if(session)await restore();}).catch(console.error).finally(readyResolve);}catch(e){console.error(e);readyResolve();}
 })();
 </script>
 
@@ -649,7 +489,7 @@ html.zl-authenticated #zlAuthGate{display:none!important}
     </form>
     <div class="zl-auth-switch"><span id="zlAuthSwitchText">İlk defa mı geliyorsun?</span><button id="zlAuthSwitch" type="button">Hesap oluştur</button></div>
     <p id="zlAuthStatus" role="status" aria-live="polite"></p>
-    <p class="zl-auth-foot">Hesabın ve oyun kayıtların bu cihazın tarayıcısında saklanır. Aynı tarayıcıda tekrar geldiğinde oturumun açık kalır.</p>
+    <p class="zl-auth-foot">Hesabın ve oyun kayıtların çevrimiçi saklanır. Aynı hesapla farklı cihazlardan giriş yapabilirsin.</p>
   </section>
 </div>
 <div id="scopeOv" hidden></div>
@@ -12874,12 +12714,13 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
 
 
 <script>
-(function () {
+(async function () {
   'use strict';
   var gate = document.getElementById('zlAuthGate');
   if (!gate) return;
   var auth = window.ZombiAuth;
-  if (!auth) {
+  if (auth && auth.ready) await auth.ready;
+  if (!auth || !window.supabase) {
     gate.hidden = false;
     var failure = document.getElementById('zlAuthStatus');
     var unavailable = document.getElementById('zlAuthSubmit');
@@ -12898,7 +12739,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
   var switchText = document.getElementById('zlAuthSwitchText');
   var subtitle = document.getElementById('zlAuthSubtitle');
   var status = document.getElementById('zlAuthStatus');
-  var mode = auth.hasAccounts() ? 'login' : 'register';
+  var mode = 'register';
 
   function setMode(next) {
     mode = next;
