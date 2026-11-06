@@ -10094,7 +10094,7 @@ function autoRoom(cb){
       if(fin){try{rm.leave();}catch(e){}return;}
       fin=true;clearTimeout(tm);
       room=rm;roomCode=code;
-      rm.on('z',handlers.z,function(){});rm.on('hit',handlers.hit,function(){});rm.on('csu',handlers.csu,function(){});
+      rm.on('z',handlers.z,function(){});rm.on('hit',handlers.hit,function(){});rm.on('csu',handlers.csu,function(){});rm.on('vhit',handlers.vhit,function(){});rm.on('vdeath',handlers.vdeath,function(){});
       rm.onPeers(renderRoster,function(){});
       rm.presence({pl:0,n:getName(),mp:MAPSEL}).catch(function(){});
       try{$('code').value=code;renderRoster();}catch(e){}
@@ -10998,7 +10998,7 @@ function r2(v){return Math.round(v*100)/100;}
 function sendPresence(dt){
   if(!room)return;
   presT-=dt;if(presT>0)return;presT=0.083;
-  if(S.playing)room.presence({pl:1,n:S.name,x:r2(S.x),z:r2(S.z),y:r2(S.yaw),p:r2(S.pitch),hp:Math.round(S.hp),a:S.alive?1:0,k:S.kills,f:S.fire,h:r2(S.y-EYE),lk:LOOKCODE,mp:(CS.on&&CS.map?CS.map.id:MAPSEL),cm:(csIsMode()?ACT:''),fid:FR.id}).catch(function(){});
+  if(S.playing)room.presence({pl:1,n:S.name,x:r2(S.x),z:r2(S.z),y:r2(S.yaw),p:r2(S.pitch),hp:Math.round(S.hp),a:S.alive?1:0,k:S.kills,f:S.fire,h:r2(S.y-EYE),lk:LOOKCODE,mp:(ACT==='vs'?VS.map:(CS.on&&CS.map?CS.map.id:MAPSEL)),cm:(csIsMode()?ACT:''),vm:(ACT==='vs'?'vs':''),tm:(ACT==='vs'?VS.team:''),mid:(ACT==='vs'?VS.matchId:''),fid:FR.id}).catch(function(){});
 }
 
 /* ===== 2026 GRAFİK PAKETİ: gökyüzü, ortam ışığı (IBL), toz/kar parçacıkları, takip eden gölge ===== */
@@ -12140,7 +12140,7 @@ $('joinBtn').addEventListener('click',function(){
     if(room){try{room.leave();}catch(e){}room=null;}
     return ns.join('z-'+code).then(function(rm){
       room=rm;roomCode=code;
-      rm.on('z',handlers.z,function(){});rm.on('hit',handlers.hit,function(){});rm.on('csu',handlers.csu,function(){});
+      rm.on('z',handlers.z,function(){});rm.on('hit',handlers.hit,function(){});rm.on('csu',handlers.csu,function(){});rm.on('vhit',handlers.vhit,function(){});rm.on('vdeath',handlers.vdeath,function(){});
       rm.onPeers(renderRoster,function(){});
       rm.presence({pl:0,n:name,mp:MAPSEL}).catch(function(){});
       $('startWrap').hidden=false;renderRoster();
@@ -12525,7 +12525,7 @@ function frFallbackCopy(ok){try{var t=document.createElement('textarea');t.value
 frInit();
 function begin(mode){
   ac();
-  ACT=(mode==='story')?'classic':(mode==='bw'?'bw':mode==='cs'?CSPICK.mode:(room?(roomCS()?roomCS().cm:'classic'):MODE));
+  ACT=(mode==='story')?'classic':(mode==='bw'?'bw':mode==='cs'?CSPICK.mode:mode==='vs'?'vs':(room?(roomCS()?roomCS().cm:'classic'):MODE));
   var bc=String($('bonus').value||'').toUpperCase().replace(/[^A-Z0-9]/g,''),used={};
   try{used=JSON.parse(localStorage.getItem('zlUsed')||'{}')||{};}catch(e){}
   S.bonus=0;
@@ -12537,18 +12537,19 @@ function begin(mode){
   closeShop();
   $('menu').hidden=true;$('hud').hidden=false;
   setMapMode(mode==='story'?'story':'survival',roomMapId());
+  if(ACT==='vs'){var _vsm=getMap(roomMapId());START=VS.team==='red'?_vsm.redStart:_vsm.blueStart;SPR=VS.team==='red'?_vsm.redSpawns:_vsm.blueSpawns;}
   S.playing=true;S.startedAt=performance.now();S.alive=true;S.hp=100;S.score=(S.bonus||0)+STARTM;S.dmgT=0;S.kills=0;S.own=ownInit();S.wi=0;S.ammo=ammoInit();S.reloading=0;
-  spawnMe();S.y=EYE;S.yaw=0;S.pitch=0;S.pw=0;S.pp=-1;modeReset();S.noLock=TOUCH;S.jx=0;S.jy=0;
+  spawnMe();S.y=EYE;S.yaw=(ACT==='vs'&&VS.team==='red')?Math.PI:0;S.pitch=0;S.pw=0;S.pp=-1;modeReset();S.noLock=TOUCH;S.jx=0;S.jy=0;
   lastSnap=null;wasHost=false;
   for(var id in Z){scene.remove(Z[id].g);delete Z[id];}
   if(HLP){scene.remove(HLP.g);HLP=null;}
   startLoadout();keys={};
   if(S.bonus)toast('Bonus kodu: +'+S.bonus+' TL');
   applySettings();
-  if(ACT!=='classic')toast(getMode(ACT).emoji+' '+getMode(ACT).name+' modu');
+  if(ACT==='vs')toast('⚔️ VS Özel Maç');else if(ACT!=='classic')toast(getMode(ACT).emoji+' '+getMode(ACT).name+' modu');
   $('touch').hidden=!TOUCH;
   if(!TOUCH)lockPointer();
-  if(room)room.presence({pl:1,n:S.name,lk:LOOKCODE,mp:(CS.on&&CS.map?CS.map.id:MAPSEL),cm:(csIsMode()?ACT:''),fid:FR.id}).catch(function(){});
+  if(room)room.presence({pl:1,n:S.name,lk:LOOKCODE,mp:(ACT==='vs'?VS.map:(CS.on&&CS.map?CS.map.id:MAPSEL)),cm:(csIsMode()?ACT:''),vm:(ACT==='vs'?'vs':''),tm:(ACT==='vs'?VS.team:''),mid:(ACT==='vs'?VS.matchId:''),fid:FR.id}).catch(function(){});
 }
 function roomMapId(){
   if(ACT==='bw')return 'bedwars';
@@ -12568,7 +12569,7 @@ function roomMapId(){
 function refreshMapBtn(){var m=getMap(MAPSEL);$('mapBtn').textContent='🗺️ Harita: '+m.emoji+' '+m.name;}
 function renderMaps(){
   var list=$('mapList');list.innerHTML='';
-  MAPS.forEach(function(m){if(m.bw)return;
+  MAPS.forEach(function(m){if(m.bw||m.vsOnly)return;
     var b=document.createElement('button');b.type='button';b.className='mcard'+(m.id===MAPSEL?' sel':'');
     var t=document.createElement('b'),ds=document.createElement('small');
     t.textContent=m.emoji+' '+m.name;ds.textContent=m.desc;b.appendChild(t);b.appendChild(ds);
@@ -12664,6 +12665,168 @@ $('menuBtn').addEventListener('click',function(){
   $('hud').hidden=true;$('menu').hidden=false;renderWardrobe();
   if(room){room.presence({pl:0,n:S.name}).catch(function(){});renderRoster();}
 });
+
+/* ===================== VS TAKIM MODU ===================== */
+var VSPICK={team:'blue',map:'vs_quarry'};
+var VS={team:'blue',map:'vs_quarry',matchId:'',active:false,ended:false,winner:'',readyT:0,hud:null,hudT:0,frags:{},deaths:0};
+
+function buildVSMap(k,d){
+  var base=MAT(d.floorColor||0x777b82),edge=MAT(d.edgeColor||0x353b45),trim=MAT(d.trimColor||0xadb4bd);
+  k.floor('metal',10);k.perim(8,edge,2);
+  (d.blocks||[]).forEach(function(b,i){
+    var x=b[0],z=b[1],w=b[2],dd=b[3],h=b[4]||3.2,col=b[5]||0x777b82;
+    var m=k.wall(x,z,w,dd,h,MAT(col));
+    if(i%2===0)k.deco(x,h+0.12,z,w+0.2,0.22,dd+0.2,trim);
+    if(w>5&&dd>5){k.deco(x,h*0.55,z,w*0.78,0.10,dd*0.78,edge);}
+  });
+  (d.pillars||[]).forEach(function(a){
+    k.cyl(a[0],a[1],a[2],a[3]||4,MAT(a[4]||0x5c6878),true);
+    k.mesh(new T.ConeGeometry(a[2]*0.9,1.1,5),MAT(a[4]||0x5c6878),a[0],(a[3]||4)+0.5,a[1]);
+  });
+  (d.crystals||[]).forEach(function(a){
+    var m=k.mesh(new T.ConeGeometry(a[2],a[3],5),MAT(a[4]),a[0],a[3]*0.5,a[1]);
+    m.rotation.y=a[5]||0;
+  });
+  function teamPad(z,color){
+    var m=k.mesh(new T.PlaneGeometry(14,7),new T.MeshBasicMaterial({color:color,transparent:true,opacity:0.17,depthWrite:false}),0,0.035,z);
+    m.rotation.x=-Math.PI/2;
+    for(var j=-1;j<=1;j++)k.deco(j*4,0.07,z,0.12,0.08,6,MAT(color));
+  }
+  teamPad(d.blueStart.z,0x347dff);teamPad(d.redStart.z,0xff3d4d);
+  k.light(0x5aa9ff,1.1,38,-d.arx*0.45,7,d.blueStart.z);
+  k.light(0xff5361,1.1,38,d.arx*0.45,7,d.redStart.z);
+}
+
+MAPS.push(
+  {id:'vs_quarry',vsOnly:true,name:'Kübik Taş Ocağı',emoji:'🧱',desc:'Alçak poligonlu taş arena; iki takım için simetrik siperler.',arx:40,arz:42,start:{x:0,z:34},spawns:[[-8,30,8,38],[-8,-38,8,-30]],sky:0x9eb2c5,fog:[0xaab9c8,0.006],blueStart:{x:0,z:34},redStart:{x:0,z:-34},blueSpawns:[[-6,31,6,37]],redSpawns:[[-6,-37,6,-31]],floorColor:0x898b83,edgeColor:0x41464c,trimColor:0xbcb6a7,blocks:[[-17,8,8,3,3.5,0x7b817f],[17,8,8,3,3.5,0x7b817f],[-10,-7,5,5,3.2,0xaaa18d],[10,-7,5,5,3.2,0xaaa18d],[-25,-18,8,4,4,0x8c928f],[25,-18,8,4,4,0x8c928f],[-26,22,6,4,3,0x777f83],[26,22,6,4,3,0x777f83],[0,0,5,5,2.8,0x606a72]],pillars:[[-4,17,1.1,4,0x9c9d91],[4,17,1.1,4,0x9c9d91],[-4,-17,1.1,4,0x9c9d91],[4,-17,1.1,4,0x9c9d91]],crystals:[],build:buildVSMap},
+  {id:'vs_neon',vsOnly:true,name:'Neon Bölgesi',emoji:'🌃',desc:'Renkli, köşeli siperler ve orta koridor; düşük poligon şehir arenası.',arx:42,arz:42,start:{x:0,z:35},spawns:[[-7,31,7,38],[-7,-38,7,-31]],sky:0x111c39,fog:[0x182344,0.008],blueStart:{x:0,z:35},redStart:{x:0,z:-35},blueSpawns:[[-6,32,6,38]],redSpawns:[[-6,-38,6,-32]],floorColor:0x343b55,edgeColor:0x151a2b,trimColor:0x6779a7,blocks:[[-20,7,9,3,3.5,0x3b5b88],[20,7,9,3,3.5,0x3b5b88],[-11,-8,5,6,3.2,0x654b86],[11,-8,5,6,3.2,0x654b86],[-29,-23,6,5,4,0x2c5970],[29,-23,6,5,4,0x2c5970],[-27,24,7,4,3.4,0x7a4d7d],[27,24,7,4,3.4,0x7a4d7d],[0,0,6,6,3.2,0x333e68]],pillars:[[-4,20,1.0,4,0x38c8dc],[4,20,1.0,4,0x38c8dc],[-4,-20,1.0,4,0xff5478],[4,-20,1.0,4,0xff5478]],crystals:[[-34,8,1.5,4,0x38c8dc,0.3],[34,-8,1.5,4,0xff5478,0.8]],build:buildVSMap},
+  {id:'vs_canyon',vsOnly:true,name:'Kızıl Kanyon',emoji:'🏜️',desc:'Kızıl kayalıklar, dar geçitler ve orta siperler.',arx:44,arz:44,start:{x:0,z:36},spawns:[[-7,32,7,40],[-7,-40,7,-32]],sky:0xd8b18e,fog:[0xd0a784,0.007],blueStart:{x:0,z:36},redStart:{x:0,z:-36},blueSpawns:[[-6,33,6,40]],redSpawns:[[-6,-40,6,-33]],floorColor:0xa0785e,edgeColor:0x593c31,trimColor:0xc19a74,blocks:[[-20,11,12,4,4,0x9a644a],[20,11,12,4,4,0x9a644a],[-12,-7,6,6,3.4,0x73503f],[12,-7,6,6,3.4,0x73503f],[-30,-21,7,5,4.5,0xb07855],[30,-21,7,5,4.5,0xb07855],[-27,28,8,4,3.5,0x8b5945],[27,28,8,4,3.5,0x8b5945],[0,0,7,4,3.0,0x785141]],pillars:[[-4,22,1.2,3.8,0xb77c56],[4,22,1.2,3.8,0xb77c56],[-4,-22,1.2,3.8,0x80513d],[4,-22,1.2,3.8,0x80513d]],crystals:[],build:buildVSMap}
+);
+
+function vsRoomPeer(){
+  if(!room)return null;var best=null;
+  room.peers().forEach(function(p){if(p.sameTab||p.kind!=='viewer')return;var pr=p.presence||{};
+    if(pr.pl===1&&pr.vm==='vs'&&pr.mp&&getMap(pr.mp).id===pr.mp&&(!best||p.peer<best.peer))best={peer:p.peer,mp:pr.mp,team:pr.tm};
+  });return best;
+}
+var _roomMapIdVS=roomMapId;
+roomMapId=function(){if(ACT==='vs'){var q=vsRoomPeer();return q?q.mp:VS.map||VSPICK.map;}return _roomMapIdVS();};
+
+function vsEnsureHud(){
+  if(VS.hud)return;
+  var st=document.createElement('style');st.textContent='.mcardlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;max-height:34vh;overflow:auto}#zlVsHud{position:fixed;z-index:36;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(560px,94vw);padding:8px 12px;border:1px solid rgba(255,255,255,.24);border-radius:12px;background:rgba(7,10,18,.82);color:#fff;text-align:center;font:700 13px/1.4 system-ui;pointer-events:none;text-shadow:0 1px 3px #000;backdrop-filter:blur(7px)}#zlVsHud .zlvsrow{display:flex;justify-content:space-between;gap:10px}#zlVsHud .b{color:#76aaff}#zlVsHud .r{color:#ff7a83}#zlVsHud .sub{font-weight:500;color:#d4d9e2;font-size:12px}';document.head.appendChild(st);
+  var el=document.createElement('div');el.id='zlVsHud';el.hidden=true;document.body.appendChild(el);VS.hud=el;
+}
+function vsEsc(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});}
+function vsPlayers(){
+  var out=[{peer:myPeer(),name:S.name,team:VS.team,alive:S.alive,local:true,k:VS.frags[myPeer()]||0}];
+  if(room)room.peers().forEach(function(p){if(p.sameTab||p.kind!=='viewer')return;var pr=p.presence||{};
+    if(pr.pl===1&&pr.vm==='vs'&&pr.mid===VS.matchId&&(pr.tm==='red'||pr.tm==='blue'))out.push({peer:p.peer,name:String(pr.n||'Oyuncu').slice(0,14),team:pr.tm,alive:pr.a===1,local:false,k:VS.frags[p.peer]||0});
+  });return out;
+}
+function vsTick(dt){
+  if(ACT!=='vs'||!S.playing){if(VS.hud)VS.hud.hidden=true;return;}
+  vsEnsureHud();VS.hud.hidden=false;VS.hudT-=dt;if(VS.hudT>0)return;VS.hudT=0.2;
+  var ps=vsPlayers(),blue=ps.filter(function(p){return p.team==='blue';}),red=ps.filter(function(p){return p.team==='red';});
+  if(!VS.active&&blue.length&&red.length){VS.readyT+=0.2;if(VS.readyT>=0.8){VS.active=true;toast('⚔️ VS maçı başladı! Rakip takımı tamamen ele.');}}
+  if(VS.active&&!VS.ended){
+    var ba=blue.filter(function(p){return p.alive;}),ra=red.filter(function(p){return p.alive;});
+    if(!ba.length||!ra.length){VS.ended=true;VS.winner=ba.length?'MAVİ':'KIRMIZI';toast('🏆 '+VS.winner+' TAKIMI KAZANDI!');}
+  }
+  var btxt=blue.map(function(p){return (p.local?'SEN':vsEsc(p.name))+' '+(p.alive?'●':'×')+' '+p.k;}).join(' · ')||'Oyuncu bekleniyor';
+  var rtxt=red.map(function(p){return (p.local?'SEN':vsEsc(p.name))+' '+(p.alive?'●':'×')+' '+p.k;}).join(' · ')||'Oyuncu bekleniyor';
+  var status=VS.ended?('MAÇ BİTTİ — '+VS.winner+' TAKIMI KAZANDI'):(VS.active?'Rakip takımın tüm oyuncularını ele.':'İki takımın da oyuncu katılması bekleniyor.');
+  VS.hud.innerHTML='<div class="zlvsrow"><span class="b">🔵 MAVİ ('+blue.filter(function(p){return p.alive;}).length+'/'+blue.length+')</span><span class="r">🔴 KIRMIZI ('+red.filter(function(p){return p.alive;}).length+'/'+red.length+')</span></div><div class="sub">'+status+'</div><div class="sub">ODA KODU: <b>'+vsEsc(roomCode)+'</b></div><div class="sub"><span class="b">'+btxt+'</span><br><span class="r">'+rtxt+'</span></div>';
+  if(VS.ended&&!S.alive){var d=$('dead');d.hidden=false;d.textContent='ELENDİN — '+VS.winner+' TAKIMI KAZANDI';}
+}
+
+handlers.vhit=function(m){
+  if(!S.playing||ACT!=='vs'||VS.ended||!S.alive)return;
+  var d=m&&m.data||{};if(d.target!==myPeer()||d.mid!==VS.matchId||d.team===VS.team)return;
+  var attacker=null;if(room)room.peers().forEach(function(p){if(p.peer===m.peer)attacker=p;});
+  if(!attacker||attacker.sameTab||attacker.kind!=='viewer'||!attacker.presence||attacker.presence.vm!=='vs'||attacker.presence.tm!==d.team)return;
+  var dmg=Math.max(1,Math.min(100,+d.dmg||0));if(!dmg)return;
+  S.hp=Math.max(0,S.hp-dmg);S.dmgT=0.2;hitMark(false);
+  if(S.hp<=0){S.hp=0;S.alive=false;S.firing=false;VS.deaths++;toast('☠️ '+S.name+' elendi!');send('vdeath',{target:myPeer(),team:VS.team,mid:VS.matchId,killer:m.peer});}
+};
+handlers.vdeath=function(m){
+  var d=m&&m.data||{};if(ACT!=='vs'||d.mid!==VS.matchId||!d.killer)return;
+  VS.frags[d.killer]=(VS.frags[d.killer]||0)+1;
+};
+
+var _modeBannerVS=modeBanner;
+modeBanner=function(){return ACT==='vs'?'⚔️ VS Özel Maç':_modeBannerVS();};
+var _updateHudVS=updateHud;
+updateHud=function(dt){_updateHudVS(dt);if(ACT==='vs'&&S.playing&&!S.alive){var _d=$('dead');_d.hidden=false;_d.textContent=VS.ended?('ELENDİN — '+VS.winner+' TAKIMI KAZANDI'):'ELENDİN — MAÇ DEVAM EDİYOR';}};
+
+var _shootVS=shoot;
+shoot=function(now){
+  if(ACT==='vs'){
+    if(VS.ended)return;
+    if(!room||!S.alive||S.reloading>0||now<S.nextShot){_shootVS(now);return;}
+    if(S.ammo[S.wi]<=0){_shootVS(now);return;}
+    var w=WEAPONS[S.wi];camera.updateMatrixWorld();var origin=new T.Vector3();camera.getWorldPosition(origin);var fwd=new T.Vector3();camera.getWorldDirection(fwd);var right=new T.Vector3().setFromMatrixColumn(camera.matrixWorld,0),up=new T.Vector3().setFromMatrixColumn(camera.matrixWorld,1),hits={};
+    for(var pi=0;pi<w.pel;pi++){
+      var dir=fwd.clone().addScaledVector(right,(Math.random()-.5)*2*w.spr).addScaledVector(up,(Math.random()-.5)*2*w.spr).normalize();
+      var best=null,bestT=70;
+      room.peers().forEach(function(p){
+        if(p.sameTab||p.kind!=='viewer')return;var pr=p.presence||{};
+        if(pr.pl!==1||pr.vm!=='vs'||pr.mid!==VS.matchId||pr.tm===VS.team||pr.a!==1)return;
+        var tx=+pr.x||0,tz=+pr.z||0,ty=(+pr.h||0)+1.0,dx=tx-origin.x,dy=ty-origin.y,dz=tz-origin.z,t=dx*dir.x+dy*dir.y+dz*dir.z;
+        if(t<=0||t>=bestT||!los(S.x,S.z,tx,tz))return;
+        var ex=origin.x+dir.x*t-tx,ey=origin.y+dir.y*t-ty,ez=origin.z+dir.z*t-tz;
+        if(ex*ex+ey*ey+ez*ez<0.72*0.72){best=p;bestT=t;}
+      });
+      if(best){var pr=best.presence||{},targetY=(+pr.h||0)+1.0;var dmg=w.dmg*(S.dmgT>0?2:1)*(PERK==='dmg'?1.15:1);var dy=origin.y+dir.y*bestT-targetY;if(Math.abs(dy-0.55)<0.24)dmg*=1.7;hits[best.peer]=(hits[best.peer]||0)+dmg;}
+    }
+    Object.keys(hits).forEach(function(peer){send('vhit',{target:peer,team:VS.team,mid:VS.matchId,dmg:Math.round(hits[peer])});});
+  }
+  _shootVS(now);
+};
+var _hostTickVS=hostTick;
+hostTick=function(dt){if(ACT==='vs')return;return _hostTickVS(dt);};
+
+function vsMenuBuild(){
+  var m=document.createElement('div');m.id='zlVsMenu';m.hidden=true;m.setAttribute('role','dialog');m.setAttribute('aria-label','VS özel maç');
+  m.innerHTML='<div class="cbox mbox"><div class="wtop"><b>⚔️ VS Özel Maç</b></div><div class="wnote">Valorant tarzı takım çatışması. Kırmızı ve mavi takım karşılaşır; bir takımın tüm oyuncuları elenince maç biter. Arkadaşların aynı oda koduna bağlanmalı.</div><div class="wtop" style="margin-top:6px"><b>Takımını seç</b></div><div id="zlVsTeams" class="btns"><button class="btn" id="zlVsBlue" type="button">🔵 Mavi Takım</button><button class="btn" id="zlVsRed" type="button">🔴 Kırmızı Takım</button></div><div class="wtop" style="margin-top:6px"><b>VS haritası</b></div><div id="zlVsMaps" class="mcardlist"></div><button class="btn go" type="button" id="zlVsPlay">▶ VS Maçını Başlat</button><button class="btn" type="button" id="zlVsClose">Kapat</button><p id="zlVsMsg" class="wnote"></p></div>';
+  $('menu').appendChild(m);
+  $('zlVsMaps').style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;max-height:34vh;overflow:auto';
+  var b=document.createElement('button');b.className='btn';b.id='zlVsBtn';b.type='button';b.style.cssText='margin-top:12px;width:100%';b.textContent='⚔️ VS Özel Maç';
+  var ref=$('armBtn');ref.parentNode.insertBefore(b,ref.nextSibling);
+  function render(){
+    $('zlVsBlue').className='btn'+(VSPICK.team==='blue'?' main':'');$('zlVsRed').className='btn'+(VSPICK.team==='red'?' main':'');
+    var list=$('zlVsMaps');list.innerHTML='';MAPS.filter(function(q){return q.vsOnly;}).forEach(function(q){var card=document.createElement('button');card.type='button';card.className='mcard'+(VSPICK.map===q.id?' sel':'');var title=document.createElement('b'),desc=document.createElement('small');title.textContent=q.emoji+' '+q.name;desc.textContent=q.desc;card.appendChild(title);card.appendChild(desc);card.addEventListener('click',function(){VSPICK.map=q.id;render();});list.appendChild(card);});
+    $('zlVsMsg').textContent=room?'Oda kodu: '+roomCode+' · Arkadaşların bu kodla aynı odaya girsin.':'Oda yok. Başlatınca otomatik oda açılacak; kodu arkadaşlarına gönder.';
+  }
+  b.addEventListener('click',function(){render();m.hidden=false;});
+  $('zlVsBlue').addEventListener('click',function(){VSPICK.team='blue';render();});$('zlVsRed').addEventListener('click',function(){VSPICK.team='red';render();});
+  $('zlVsClose').addEventListener('click',function(){m.hidden=true;});
+  $('zlVsPlay').addEventListener('click',function(){
+    getName();m.hidden=true;
+    function launch(){
+      if(!room){say('VS için çok oyunculu oda açılamadı. Odaya girip tekrar dene; oda bağlantısı olmadan takım maçı çalışmaz.');m.hidden=false;return;}
+      var active=vsRoomPeer();VS.team=VSPICK.team;VS.map=active?active.mp:VSPICK.map;VS.active=false;VS.ended=false;VS.winner='';VS.readyT=0;VS.frags={};VS.deaths=0;VS.matchId=roomCode+'|'+VS.map;
+      begin('vs');toast('VS oda kodu: '+roomCode+' · '+(VS.team==='blue'?'MAVİ':'KIRMIZI')+' TAKIM');
+    }
+    if(room){launch();return;}
+    if(!SET.open){say('Ayarlar bölümünden arkadaşların katılmasına izin ver veya önce oda koduyla odaya gir.');m.hidden=false;return;}
+    say('VS odası açılıyor…');autoRoom(launch);
+  });
+}
+vsMenuBuild();
+
+/* Oyuncu menüye dönerse VS alanı da gizlensin. */
+var _vsMenuBtn=$('menuBtn');
+if(_vsMenuBtn)_vsMenuBtn.addEventListener('click',function(){VS.active=false;if(VS.hud)VS.hud.hidden=true;});
+var _updateRemoteVS=updateRemote;
+updateRemote=function(dt){
+  _updateRemoteVS(dt);
+  if(ACT==='vs'&&room){room.peers().forEach(function(p){if(p.sameTab||p.kind!=='viewer')return;var r=R[p.peer],pr=p.presence||{};if(!r||!r.g||pr.vm!=='vs')return;if(!r.vsMark){r.vsMark=new T.Mesh(new T.SphereGeometry(0.19,8,6),new T.MeshBasicMaterial({color:0x347dff}));r.vsMark.position.set(0,2.55,0);r.g.add(r.vsMark);}r.vsMark.material.color.setHex(pr.tm==='red'?0xff4655:0x347dff);});}
+};
+var _updatePlayerVS=updatePlayer;
+updatePlayer=function(dt,now){if(ACT==='vs'&&VS.ended){S.firing=false;keys={};S.jx=0;S.jy=0;} _updatePlayerVS(dt,now);vsTick(dt);};
+
+
 var bt=$('boot');if(bt)bt.hidden=true;
 })();
 </script>
