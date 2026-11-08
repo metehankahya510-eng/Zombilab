@@ -18,43 +18,7 @@ window.addEventListener('appinstalled', function() {
 });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(function(){
-'use strict';
-var URL='https://gupvqxzvidljztrlbvqp.supabase.co';
-var KEY='sb_publishable_nthZMIOAgN9J0QjC4gs-ig_2RtOp61j';
-var TABLE='zombilab_player_saves', PREFIX='__zombilab_user__:';
-var st=localStorage, p=Storage.prototype, get=p.getItem, set=p.setItem, rem=p.removeItem, key=p.key, len=Object.getOwnPropertyDescriptor(p,'length').get;
-var client=null, session=null, user=null, timer=0, busy=false, readyResolve;
-var ready=new Promise(function(r){readyResolve=r;});
-function akey(uid,k){return PREFIX+uid+':'+k;}
-function mapped(s,k){k=String(k);return s===st&&/^zl[A-Za-z0-9_-]*$/.test(k)&&session&&session.user?akey(session.user.id,k):k;}
-function email(n){var b=new TextEncoder().encode(String(n).trim().normalize('NFC').toLowerCase()),h='';for(var i=0;i<b.length;i++)h+=b[i].toString(16).padStart(2,'0');return 'u'+h+'@accounts.zombilab.invalid';}
-function uname(v){var n=String(v||'').trim().normalize('NFC');if(!/^[\p{L}\p{N}._-]{3,18}$/u.test(n))throw Error('Hesap adı 3–18 karakter olmalı.');return n;}
-function pass(v){v=String(v||'');if(v.length<6||v.length>128)throw Error('Şifre 6–128 karakter arasında olmalı.');return v;}
-function name(){return user&&user.user_metadata&&user.user_metadata.username||get.call(st,'zombilab.cloud.username.v1')||'Oyuncu';}
-function collect(onlyLegacy){var o={},pre=session&&session.user?PREFIX+session.user.id+':':'';for(var i=0,n=len.call(st);i<n;i++){var k=key.call(st,i);if(!k)continue;if(onlyLegacy&&/^zl[A-Za-z0-9_-]*$/.test(k))o[k]=get.call(st,k);else if(!onlyLegacy&&pre&&k.indexOf(pre)===0)o[k.slice(pre.length)]=get.call(st,k);}return o;}
-async function saveNow(){if(!client||!session||busy)return;busy=true;try{var r=await client.from(TABLE).upsert({user_id:session.user.id,save_data:collect(false),updated_at:new Date().toISOString()},{onConflict:'user_id'});if(r.error)throw r.error;}catch(e){console.warn('Cloud save:',e);}finally{busy=false;}}
-function schedule(){if(!session)return;clearTimeout(timer);timer=setTimeout(saveNow,1300);}
-async function restore(){if(!session)return;var r=await client.from(TABLE).select('save_data').eq('user_id',session.user.id).maybeSingle();if(r.error)throw r.error;var d=r.data&&r.data.save_data;if(d&&typeof d==='object'){Object.keys(d).forEach(function(k){if(/^zl[A-Za-z0-9_-]*$/.test(k)&&typeof d[k]==='string')set.call(st,akey(session.user.id,k),d[k]);});}else{var old=collect(true);Object.keys(old).forEach(function(k){set.call(st,akey(session.user.id,k),old[k]);});await saveNow();}}
-p.getItem=function(k){return get.call(this,mapped(this,k));};
-p.setItem=function(k,v){set.call(this,mapped(this,k),v);if(this===st&&/^zl[A-Za-z0-9_-]*$/.test(String(k)))schedule();};
-p.removeItem=function(k){rem.call(this,mapped(this,k));if(this===st&&/^zl[A-Za-z0-9_-]*$/.test(String(k)))schedule();};
-window.addEventListener('pagehide',function(){if(session)saveNow();});
-var api={
-ready:ready,hasAccounts:function(){return false;},
-isSignedIn:function(){return !!(session&&session.user);},
-getCurrentAccount:function(){return session&&session.user?{username:name()}:null;},
-register:async function(n,pw){n=uname(n);var r=await client.auth.signUp({email:email(n),password:pass(pw),options:{data:{username:n}}});if(r.error)throw Error(r.error.message);session=r.data.session;user=r.data.user;if(!session)throw Error('Supabase ayarında Email OTP/Confirm email kapatılmalı. Authentication > Providers > Email.');set.call(st,'zombilab.cloud.username.v1',n);var old=collect(true);Object.keys(old).forEach(function(k){set.call(st,akey(session.user.id,k),old[k]);});await saveNow();return{username:n};},
-login:async function(n,pw){n=uname(n);var r=await client.auth.signInWithPassword({email:email(n),password:pass(pw)});if(r.error)throw Error('Hesap adı veya şifre yanlış.');session=r.data.session;user=r.data.user;set.call(st,'zombilab.cloud.username.v1',n);await restore();return{username:n};},
-changePassword:async function(cur,next){if(!session)throw Error('Önce giriş yap.');var n=name(),v=await client.auth.signInWithPassword({email:email(n),password:pass(cur)});if(v.error)throw Error('Mevcut şifre yanlış.');var r=await client.auth.updateUser({password:pass(next)});if(r.error)throw Error(r.error.message);return true;},
-logout:async function(){await saveNow();await client.auth.signOut();session=null;user=null;rem.call(st,'zombilab.cloud.username.v1');}
-};
-window.ZombiAuth=api;
-try{if(!window.supabase)throw Error('Supabase kitaplığı yüklenemedi');client=window.supabase.createClient(URL,KEY);client.auth.onAuthStateChange(function(e,s){session=s;user=s&&s.user||null;});client.auth.getSession().then(async function(r){if(r.error)throw r.error;session=r.data.session;user=session&&session.user||null;if(session)await restore();}).catch(console.error).finally(readyResolve);}catch(e){console.error(e);readyResolve();}
-})();
-</script>
+
 
 
 <style>
@@ -207,10 +171,26 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--lin
 .mcard b{font-size:1.05rem}.mcard small{color:var(--muted)}.mcard.sel{border-color:var(--toxic)}
 @media (prefers-reduced-motion:reduce){#hpFill,#dmgV,#hitm{transition:none}}
 
+
+/* Sol orta: oyun parlakligi kontrolu */
+#brightDock{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:120;display:flex;flex-direction:column;align-items:flex-start;gap:7px;pointer-events:auto}
+#brightToggle{border:2px solid #ffe36e;background:rgba(0,0,0,.78);color:#ffe36e;border-radius:12px;padding:11px 10px;font-weight:800;writing-mode:vertical-rl;min-height:104px;touch-action:manipulation}
+#brightPanel{display:none;background:rgba(0,0,0,.88);border:2px solid #ffe36e;border-radius:12px;padding:10px;width:150px;color:#fff}
+#brightPanel.open{display:block}
+#brightPanel input{width:100%;accent-color:#ffe36e}
+#brightValue{font-weight:800;color:#ffe36e;text-align:center}
+/* Magazaya girmeden hizli silah satin alma/secme */
+#quickWeaponDock{position:fixed;right:140px;bottom:calc(12px + var(--si-b));z-index:115;pointer-events:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+#quickWeaponToggle{border:2px solid var(--toxic);background:rgba(0,0,0,.86);color:var(--toxic);border-radius:12px;padding:10px 12px;font-weight:900;touch-action:manipulation}
+#quickWeaponPanel{display:none;width:min(190px,48vw);max-height:38vh;overflow:auto;grid-template-columns:1fr 1fr;gap:5px;padding:7px;background:rgba(0,0,0,.9);border:2px solid var(--toxic);border-radius:12px}
+#quickWeaponPanel.open{display:grid}
+.qw{min-width:0;border:1px solid rgba(255,255,255,.3);border-radius:8px;background:#202832;color:#fff;padding:8px 4px;font-size:.75rem;font-weight:800;touch-action:manipulation;line-height:1.15}
+.qw.owned{border-color:var(--toxic)}.qw.selected{background:var(--toxic);color:#07120a;border-color:var(--toxic)}.qw:disabled{opacity:.55}
+@media(max-width:520px){#quickWeaponDock{right:136px}#quickWeaponPanel{width:178px}.qw{font-size:.7rem;padding:7px 3px}}
 #scopeOv{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0,transparent 30vmin,#000 30.4vmin)}
 #scopeOv::before{content:'';position:absolute;left:50%;top:calc(50% - 30vmin);width:1px;height:60vmin;background:rgba(0,0,0,.9)}
 #scopeOv::after{content:'';position:absolute;top:50%;left:calc(50% - 30vmin);height:1px;width:60vmin;background:rgba(0,0,0,.9)}
-#bScope{right:310px;bottom:calc(210px + var(--si-b));width:64px;height:64px;font-size:1.4rem;background:rgba(80,200,120,.5)}
+#bScope{right:150px;bottom:calc(340px + var(--si-b));width:64px;height:64px;font-size:1.4rem;background:rgba(80,200,120,.5)}
 .tb.on{outline:3px solid #7cff4f}
 .cr-wrap{position:relative;overflow:hidden;height:116px;border-radius:12px;background:#0b0f16;border:2px solid #2b3442;margin:10px 0;transition:box-shadow .4s}
 .cr-wrap.flash2{box-shadow:0 0 26px #c58bff}.cr-wrap.flash3{box-shadow:0 0 34px #ffd23f}
@@ -443,27 +423,27 @@ body.bw #ammo,body.bw #wname,body.bw #wlist,body.bw #csRadar,body.bw #csHud{disp
 @media(max-width:560px){#installAppBtn{top:calc(12px + var(--si-t));right:10px;padding:7px 9px;font-size:.76rem}}
 
 
-/* Hesap giriş/kayıt ekranı */
-#zlAuthGate{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(ellipse at 50% 12%,rgba(124,255,79,.12),transparent 44%),rgba(3,5,8,.97);overflow:auto;}
-html.zl-authenticated #zlAuthGate{display:none!important}
-.zl-auth-card{width:min(430px,100%);padding:clamp(20px,5vw,30px);border:1px solid rgba(124,255,79,.34);border-radius:20px;background:linear-gradient(160deg,rgba(22,29,38,.98),rgba(8,12,17,.99));box-shadow:0 22px 70px rgba(0,0,0,.58);display:grid;gap:13px;}
-.zl-auth-brand{display:flex;align-items:center;gap:12px;}
-.zl-auth-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:rgba(124,255,79,.12);font-size:1.8rem;}
-.zl-auth-brand h2{margin:0;font-size:1.65rem;letter-spacing:.04em;}
-.zl-auth-sub{margin:0;color:var(--muted);font-size:.95rem;line-height:1.45;}
-.zl-auth-form{display:grid;gap:9px;}
-.zl-auth-form label,.zl-pass-box label{font-size:.9rem;color:#dce5e9;font-weight:700;}
-.zl-auth-form input,.zl-pass-box input{width:100%;min-height:44px;padding:10px 12px;border:1px solid rgba(255,255,255,.18);border-radius:11px;background:#080d13;color:var(--ink);font:inherit;user-select:text;-webkit-user-select:text;}
-.zl-auth-submit{min-height:46px;margin-top:4px;border:1px solid #7cff4f;border-radius:12px;background:linear-gradient(180deg,#9aff70,#62d833);color:#091207;font:inherit;font-weight:900;}
-.zl-auth-submit:disabled{opacity:.6;}
-.zl-auth-switch{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px;color:var(--muted);font-size:.9rem;text-align:center;}
-.zl-auth-switch button{border:0;background:transparent;color:#a5ff82;font:inherit;font-weight:800;text-decoration:underline;padding:4px;}
-#zlAuthStatus{min-height:1.35em;margin:0;color:#ffaaaa;text-align:center;font-size:.9rem;}
-.zl-auth-foot{margin:0;color:#83909b;font-size:.75rem;line-height:1.4;text-align:center;}
-.zl-pass-box{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.18);}
-#zlPassMessage{min-height:1.2em;margin:0;font-size:.85rem;color:#baff9f;}
-#zlAccountLabel{overflow-wrap:anywhere;}
-@media(max-width:420px){.zl-auth-card{padding:20px 16px}.zl-auth-brand h2{font-size:1.45rem}}
+/* Mobil kontroller ve oyun içi üst düğmeler için kesin katman sırası */
+#scopeOv{z-index:1!important;pointer-events:none!important}
+#hud{z-index:20!important}
+#touch{z-index:30!important;pointer-events:none!important}
+#touch #lookzone{z-index:0!important;pointer-events:auto!important}
+#touch #stick,#touch .tb{z-index:10!important;pointer-events:auto!important}
+#touch #bFire{z-index:30!important;pointer-events:auto!important;touch-action:none!important}
+#menuBtn,#shopBtn{z-index:80!important;pointer-events:auto!important;touch-action:manipulation!important}
+#shop{z-index:90!important;pointer-events:auto!important}
+
+/* ZL_INPUT_SAFETY: mobil dokunmatik butonlari her overlay'in ustunde ve tiklanabilir tut. */
+button,[role="button"]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#hud{z-index:20}
+#touch{z-index:10;pointer-events:none}
+#touch .tb,#touch #stick,#touch #lookzone{pointer-events:auto}
+#touch .tb{z-index:30;touch-action:none;user-select:none;-webkit-user-select:none}
+#touch #bFire{z-index:40;pointer-events:auto;touch-action:none;}
+#touch #bScope{z-index:41;pointer-events:auto;}
+#menuBtn,#shopBtn{z-index:60;pointer-events:auto;touch-action:manipulation}
+#shop{z-index:70;pointer-events:auto}
+#scopeOv{z-index:1;pointer-events:none}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07090c">
@@ -473,24 +453,13 @@ html.zl-authenticated #zlAuthGate{display:none!important}
 <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
-<div id="zlAuthGate" role="dialog" aria-modal="true" aria-labelledby="zlAuthTitle">
-  <section class="zl-auth-card">
-    <div class="zl-auth-brand"><div class="zl-auth-icon">🧟</div><div><h2 id="zlAuthTitle">Zombi Lab</h2><p class="zl-auth-sub" id="zlAuthSubtitle">Hesabına giriş yap.</p></div></div>
-    <form class="zl-auth-form" id="zlAuthForm" novalidate>
-      <label for="zlAuthName">Hesap adı</label>
-      <input id="zlAuthName" name="username" type="text" minlength="3" maxlength="18" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Hesap adın" required>
-      <label for="zlAuthPassword">Şifre</label>
-      <input id="zlAuthPassword" name="password" type="password" minlength="6" maxlength="128" autocomplete="current-password" placeholder="Şifren" required>
-      <div id="zlAuthConfirmWrap" hidden>
-        <label for="zlAuthConfirm">Şifreyi tekrar yaz</label>
-        <input id="zlAuthConfirm" name="passwordConfirm" type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="Şifreni tekrar yaz">
-      </div>
-      <button class="zl-auth-submit" id="zlAuthSubmit" type="submit">Giriş yap</button>
-    </form>
-    <div class="zl-auth-switch"><span id="zlAuthSwitchText">İlk defa mı geliyorsun?</span><button id="zlAuthSwitch" type="button">Hesap oluştur</button></div>
-    <p id="zlAuthStatus" role="status" aria-live="polite"></p>
-    <p class="zl-auth-foot">Hesabın ve oyun kayıtların çevrimiçi saklanır. Aynı hesapla farklı cihazlardan giriş yapabilirsin.</p>
-  </section>
+<div id="brightDock" aria-label="Parlaklik ayari">
+  <button id="brightToggle" type="button" aria-expanded="false">☀ PARLAKLIK</button>
+  <div id="brightPanel"><div style="font-weight:800;text-align:center;margin-bottom:6px">Parlaklik</div><input id="brightRange" type="range" min="1" max="5" step="0.05" value="3.5" aria-label="Parlaklik seviyesi"><div id="brightValue">250%</div><button id="brightMax" type="button" style="width:100%;margin-top:7px;padding:7px;border-radius:8px;background:#ffe36e;color:#111;font-weight:900">FULL</button></div>
+</div>
+<div id="quickWeaponDock">
+  <div id="quickWeaponPanel" aria-label="Hizli silah secimi"></div>
+  <button id="quickWeaponToggle" type="button" aria-expanded="false">🔫 HIZLI SİLAHLAR</button>
 </div>
 <div id="scopeOv" hidden></div>
 <canvas id="game"></canvas>
@@ -7478,9 +7447,9 @@ var canvas=$('game');
 var renderer=null;
 try{renderer=new T.WebGLRenderer({canvas:canvas,antialias:true});}catch(e){renderer=null;}
 if(!renderer){initFallback('Bu cihazda 3D (WebGL) açılamadı. Sayfayı yenile; olmazsa Safari veya Chrome ile linkten aç.');return;}
-var EXPO=1.2;
+var EXPO=2.0;
 var PXR_MAX=Math.min(window.devicePixelRatio||1,2.5),PXR=Math.min(PXR_MAX,2);renderer.setPixelRatio(PXR);
-try{renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;}catch(e){}
+try{renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=2.0;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;}catch(e){}
 var scene=new T.Scene();
 scene.background=new T.Color(0x4b3340);
 scene.fog=new T.FogExp2(0x59424c,0.0135);
@@ -7750,7 +7719,7 @@ function setGun(i){
   applyWeaponSkin(i);
 }
 
-function setAds(on){on=!!on;if(!!S.ads===on)return;if(on&&!(WEAPONS[S.wi].scope&&S.alive&&S.playing))return;S.ads=on;var ov=$('scopeOv');if(ov)ov.hidden=!on;applySettings();var b=$('bScope');if(b)b.classList.toggle('on',on);}
+function setAds(on){on=!!on;if(!!S.ads===on)return;if(on&&!(WEAPONS[S.wi].scope&&S.alive&&S.playing))return;S.ads=on;var ov=$('scopeOv');if(ov){ov.hidden=!on;ov.style.pointerEvents='none';}document.body.classList.toggle('ads-on',on);applySettings();var b=$('bScope');if(b)b.classList.toggle('on',on);var f=$('bFire');if(f){f.style.pointerEvents='auto';f.style.zIndex='30';}}
 
 
 /* ================= zombi / oyuncu modelleri ================= */
@@ -8239,7 +8208,7 @@ function buildStoryMap(){
 }
 function setMapMode(m,id){
   var st=m==='story',map=st?null:getMap(id||MAPSEL),w=null;
-  try{EXPO=(m==='story')?1.45:(map.id==='desert'?1.2:(map.id==='aquapark'?0.95:(map.id==='farm'?1.0:(map.cs?1.1:(map.id==='airport'?1.15:1.5)))));try{var br=(map&&(map.id==='aquapark'||map.id==='snow'));PFX.bloom.strength=br?0.2:(GQ==='ultra'?0.68:0.5);PFX.bloom.threshold=br?0.96:(GQ==='ultra'?0.74:0.8);}catch(e){}}catch(e){}
+  try{EXPO=2.0;try{var br=(map&&(map.id==='aquapark'||map.id==='snow'));PFX.bloom.strength=br?0.2:(GQ==='ultra'?0.68:0.5);PFX.bloom.threshold=br?0.96:(GQ==='ultra'?0.74:0.8);}catch(e){}}catch(e){EXPO=2.0;}
   if(st)buildStoryMap();else if(map.id!=='desert')w=buildMap(map);
   hideWorlds();clearSplats();
   if(st){
@@ -10966,7 +10935,7 @@ function updateHud(dt){
   var bh=$('bosshud'),bshow=BOSS.on&&BOSS.state!=='dead'&&BOSS.state!=='none';bh.hidden=!bshow;
   if(bshow){$('bossfill').style.width=Math.max(0,BOSS.hp/BOSS.max*100)+'%';$('bossstam').style.width=(BOSS.state==='tired'?0:Math.max(0,BOSS.stam))+'%';$('bossnm').textContent=BOSS.state==='tired'?'SİYAH ADAM — YORGUN! VUR!':'SİYAH ADAM';}
   $('hpFill').style.width=S.hp+'%';$('hpFill').className=S.hp<30?'low':'';
-  $('hpTxt').textContent='Can '+Math.round(S.hp)+(S.armor>0?' · Zırh '+Math.round(S.armor):'');$('score').textContent=S.score+' TL · 💎 '+DIA;
+  $('hpTxt').textContent='Can '+Math.round(S.hp)+(S.armor>0?' · Zırh '+Math.round(S.armor):'');$('score').textContent=S.score+' TL · 💎 '+DIA;if(window.renderQuickWeapons&&$('quickWeaponPanel').classList.contains('open'))window.renderQuickWeapons();
   var w=WEAPONS[S.wi];
   $('ammo').textContent=S.reloading>0?'Şarjör değişiyor':S.ammo[S.wi]+' / '+w.mag;
   $('wname').textContent='💣'+(S.gren||0)+' · '+w.n+(S.dmgT>0?' · çifte hasar '+Math.ceil(S.dmgT)+' sn':'');
@@ -11075,7 +11044,7 @@ function frame(now){
   if(S.playing){updatePlayer(dt,now);dlgTick(dt);if(STORY.on){storyTick(dt);bossTick(dt);bulletsTick(dt);storyFx(dt);}if(!DLG.on&&!STORY.busy)hostTick(dt);}else updatePreview(dt);
   updateRemote(dt);updateHelper(dt);updateZombies(dt);updateFx(dt);updateBaah();if(curAnim&&S.playing)curAnim(dt,now);updateHud(dt);sendPresence(dt);
   updateModels(dt,now);gfxTick(dt,now);
-  if(S.playing){renderer.toneMappingExposure=EXPO;fxRender(dt,now);}else{renderer.toneMappingExposure=0.85;renderer.render(pscene,pcam);}
+  if(S.playing){renderer.toneMappingExposure=(window.ZL_BRIGHTNESS||3.5);fxRender(dt,now);}else{renderer.toneMappingExposure=(window.ZL_BRIGHTNESS||3.5);renderer.render(pscene,pcam);}
 }
 requestAnimationFrame(frame);
 
@@ -11133,8 +11102,8 @@ if(TOUCH)document.body.classList.add('touch');
   lz.addEventListener('pointermove',function(e){if(e.pointerId!==lid)return;S.yaw-=(e.clientX-lx)*0.006*SET.sens*(S.ads?0.3:1);S.pitch=Math.max(-1.45,Math.min(1.45,S.pitch-(e.clientY-ly)*0.006*SET.sens*(S.ads?0.3:1)));lx=e.clientX;ly=e.clientY;});
   function endL(e){if(e.pointerId===lid)lid=null;}
   lz.addEventListener('pointerup',endL);lz.addEventListener('pointercancel',endL);
-  function hold(id,down,up){var b=$(id);b.addEventListener('pointerdown',function(e){e.preventDefault();ac();b.setPointerCapture(e.pointerId);down();});b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);}
-  hold('bFire',function(){if(!S.playing)return;S.firing=true;shoot(performance.now());},function(){S.firing=false;});
+  function hold(id,down,up){var b=$(id);if(!b)return;var held={};function start(e){if(held[e.pointerId])return;e.preventDefault();ac();held[e.pointerId]=1;try{if(b.setPointerCapture)b.setPointerCapture(e.pointerId);}catch(err){}down(e);}function end(e){if(!held[e.pointerId])return;delete held[e.pointerId];up(e);}b.addEventListener('pointerdown',start);b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);b.addEventListener('lostpointercapture',end);window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);}
+  var fireDownAt=0;hold('bFire',function(){if(!S.playing||!S.alive)return;fireDownAt=Date.now();S.firing=true;shoot(performance.now());},function(){S.firing=false;});$('bFire').addEventListener('click',function(e){if(Date.now()-fireDownAt>450&&S.playing&&S.alive){S.firing=false;shoot(performance.now());}});
   hold('bJump',function(){keys.Space=true;},function(){keys.Space=false;});
   hold('bReload',function(){reload();},function(){});
   hold('bSlide',function(){trySlide();},function(){});
@@ -11202,7 +11171,40 @@ $('shHeal').addEventListener('click',function(){if(S.alive&&S.hp<100&&S.score>=H
   else toast('Yetmiyor: '+WEAPONS[i].n+' '+WEAPONS[i].cost+' TL, paran '+S.score+' TL');
   renderShop();});});
 $('shClose').addEventListener('click',closeShop);
-$('shopBtn').addEventListener('click',toggleShop);
+var shopActionAt=0;function shopActivate(){var n=Date.now();if(n-shopActionAt<350)return;shopActionAt=n;toggleShop();}$('shopBtn').addEventListener('click',shopActivate);$('shopBtn').addEventListener('pointerdown',function(e){if(e.pointerType==='touch'){e.preventDefault();shopActivate();}});
+
+// Parlaklik dugmesi: renderer pozlamasini aninda degistirir ve saklar.
+(function(){
+  var dock=$('brightDock'),toggle=$('brightToggle'),panel=$('brightPanel'),range=$('brightRange'),value=$('brightValue'),max=$('brightMax');
+  var saved=3.5;try{saved=parseFloat(lsGet('zlBrightness')||'3.5');}catch(e){}if(!isFinite(saved))saved=3.5;
+  function applyBright(v){v=Math.max(1,Math.min(5,+v||3.5));window.ZL_BRIGHTNESS=v;range.value=String(v);value.textContent=Math.round(v*100)+'%';try{if(renderer)renderer.toneMappingExposure=v;}catch(e){}try{lsSet('zlBrightness',String(v));}catch(e){} }
+  toggle.addEventListener('click',function(){var on=!panel.classList.contains('open');panel.classList.toggle('open',on);toggle.setAttribute('aria-expanded',String(on));});
+  range.addEventListener('input',function(){applyBright(range.value);});max.addEventListener('click',function(){applyBright(5);});
+  applyBright(Math.max(saved,3.5));
+})();
+// Hizli silah paneli: magazayi acmadan satin al / sahip oldugun silahi kusan.
+(function(){
+  var panel=$('quickWeaponPanel'),toggle=$('quickWeaponToggle');
+  toggle.addEventListener('click',function(){var on=!panel.classList.contains('open');panel.classList.toggle('open',on);toggle.setAttribute('aria-expanded',String(on));renderQuickWeapons();});
+  window.renderQuickWeapons=function(){
+    if(!panel)return;panel.innerHTML='';
+    WEAPONS.forEach(function(w,i){
+      var b=document.createElement('button'),owned=!!(S.own&&S.own[i]),selected=S.wi===i;
+      b.type='button';b.className='qw'+(owned?' owned':'')+(selected?' selected':'');
+      b.textContent=(owned?(selected?'✓ ':''):'🛒 ')+w.n+(owned?'':('\n'+w.cost+' TL'));
+      b.disabled=ACT==='gungame'||(!owned&&S.score<w.cost);
+      b.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();
+        if(ACT==='gungame'){toast('Silah Yarisi modunda silahlar sirayla acilir');return;}
+        if(owned){S.wi=i;S.reloading=0;S.ammo[i]=w.mag;setGun(i);sfxClick();toast(w.n+' secildi');}
+        else if(S.score>=w.cost){S.score-=w.cost;S.own[i]=true;S.wi=i;S.reloading=0;S.ammo[i]=w.mag;setGun(i);sfxClick();toast(w.n+' satin alindi');}
+        else toast('Yetersiz para: '+w.cost+' TL gerekiyor');
+        renderQuickWeapons();
+      });panel.appendChild(b);
+    });
+  };
+  renderQuickWeapons();
+})();
+
 
 /* ================= karakter ve gardırop ================= */
 var HS=['none','buzz','short','side','curly','wavy','long','bob','ponytail','bun','pigtails','braid','mohawk','spiky','undercut','afro'],
@@ -12150,8 +12152,9 @@ $('joinBtn').addEventListener('click',function(){
 });
 $('soloBtn').addEventListener('click',function(){
   getName();
+  /* Tek başına oyna: ağ/oda bağlantısını beklemeden doğrudan yerel oyunu başlat. */
   if(room){try{room.leave();}catch(e){}room=null;roomCode='';$('roster').hidden=true;}
-  if(MODE==='classic'&&SET.open)autoRoom(function(){begin();});else begin();
+  try{begin();}catch(err){console.error('Zombi Lab solo start error:',err);say('Oyun başlatılamadı: '+(err&&err.message?err.message:'bilinmeyen hata'));}
 });
 $('startBtn').addEventListener('click',function(){getName();begin();});
 var CODES={DERS100:100,LAB200:200,SINIF300:300};
@@ -12327,7 +12330,7 @@ function frShotChar(){
     if(!pav)refreshPreview();
     var W=256,rt=new T.WebGLRenderTarget(W,W),cam=new T.PerspectiveCamera(26,1,0.1,60),oy=pav.rotation.y;
     pav.rotation.y=0;cam.position.set(0,1.72,3.6);cam.lookAt(0,1.62,0);
-    renderer.toneMappingExposure=0.85;renderer.setRenderTarget(rt);renderer.render(pscene,cam);renderer.setRenderTarget(null);
+    var _oldExpo=renderer.toneMappingExposure;renderer.toneMappingExposure=(window.ZL_BRIGHTNESS||3.5);renderer.setRenderTarget(rt);renderer.render(pscene,cam);renderer.setRenderTarget(null);renderer.toneMappingExposure=_oldExpo;
     var px=new Uint8Array(W*W*4);renderer.readRenderTargetPixels(rt,0,0,W,W,px);rt.dispose();pav.rotation.y=oy;
     var c=document.createElement('canvas');c.width=c.height=W;var g=c.getContext('2d'),id=g.createImageData(W,W),y;
     for(y=0;y<W;y++)id.data.set(px.subarray((W-1-y)*W*4,(W-y)*W*4),y*W*4);
@@ -12492,16 +12495,13 @@ function frInit(){
   var dr=document.createElement('div');dr.id='friends';dr.innerHTML='<div class="fr-top"><b>👥 Arkadaşlar</b><button type="button" class="btn" id="frClose">Kapat</button></div><div id="frBody"></div>';menu.appendChild(dr);
   var pb=document.createElement('button');pb.id='profBtn';pb.type='button';pb.textContent='👤 Profil';menu.appendChild(pb);
   var pr=document.createElement('div');pr.id='profile';pr.hidden=true;pr.setAttribute('role','dialog');pr.setAttribute('aria-label','Profil');
-  pr.innerHTML='<div class="cbox mbox"><div class="wtop"><b>👤 Profilim</b></div><div class="prof-ph"><div id="profPh0" class="prof-ph0">👤</div><img id="profImg" alt="Profil fotoğrafı" hidden><div class="prof-phb"><button class="btn" type="button" id="phShot">📸 Karakterimi çek</button><button class="btn" type="button" id="phGal">🖼️ Galeriden seç</button><button class="btn" type="button" id="phDel">Kaldır</button></div><input type="file" id="phFile" accept="image/*" hidden></div><label for="profName">Oyuncu adı</label><input id="profName" maxlength="14" autocomplete="off"><div class="prof-idl">ID\'n</div><div class="prof-id" id="profId"></div><div class="quick"><button class="btn" type="button" id="profCopy">ID\'yi kopyala</button><button class="btn" type="button" id="profLink">🔗 Bağlantı</button><button class="btn" type="button" id="profShare">Paylaş</button></div><div class="wnote" id="profStats"></div><button class="btn" type="button" id="profFr">👥 Arkadaşlarım</button><div class="wnote" id="zlAccountLabel"></div><button class="btn" type="button" id="zlPassToggle">🔐 Yeni şifre oluştur / değiştir</button><div class="zl-pass-box" id="zlPassPanel" hidden><label for="zlPassCurrent">Mevcut şifre</label><input id="zlPassCurrent" type="password" autocomplete="current-password" maxlength="128"><label for="zlPassNew">Yeni şifre</label><input id="zlPassNew" type="password" autocomplete="new-password" minlength="6" maxlength="128"><label for="zlPassConfirm">Yeni şifreyi tekrar yaz</label><input id="zlPassConfirm" type="password" autocomplete="new-password" minlength="6" maxlength="128"><button class="btn main" type="button" id="zlPassSave">Şifreyi kaydet</button><p id="zlPassMessage" role="status" aria-live="polite"></p></div><button class="btn" type="button" id="zlLogout">🚪 Hesaptan çıkış yap</button><button class="btn" type="button" id="profClose">Kapat</button></div>';
+  pr.innerHTML='<div class="cbox mbox"><div class="wtop"><b>👤 Profilim</b></div><div class="prof-ph"><div id="profPh0" class="prof-ph0">👤</div><img id="profImg" alt="Profil fotoğrafı" hidden><div class="prof-phb"><button class="btn" type="button" id="phShot">📸 Karakterimi çek</button><button class="btn" type="button" id="phGal">🖼️ Galeriden seç</button><button class="btn" type="button" id="phDel">Kaldır</button></div><input type="file" id="phFile" accept="image/*" hidden></div><label for="profName">Oyuncu adı</label><input id="profName" maxlength="14" autocomplete="off"><div class="prof-idl">ID\'n</div><div class="prof-id" id="profId"></div><div class="quick"><button class="btn" type="button" id="profCopy">ID\'yi kopyala</button><button class="btn" type="button" id="profLink">🔗 Bağlantı</button><button class="btn" type="button" id="profShare">Paylaş</button></div><div class="wnote" id="profStats"></div><button class="btn" type="button" id="profFr">👥 Arkadaşlarım</button><button class="btn" type="button" id="profClose">Kapat</button></div>';
   menu.appendChild(pr);
   tab.addEventListener('click',function(){if($('friends').classList.contains('open'))closeFriends();else openFriends();});
   $('frClose').addEventListener('click',closeFriends);
   pb.addEventListener('click',function(){
     $('profName').value=frMyName();$('profId').textContent=FR.id;
     $('profStats').textContent='En yüksek dalga: '+REC.wave+' · Toplam öldürme: '+REC.kills+' · En uzun seri: '+REC.combo+' · Arkadaş: '+FR.list.length;
-    var signedAccount=window.ZombiAuth&&window.ZombiAuth.getCurrentAccount();
-    $('zlAccountLabel').textContent=signedAccount?'Giriş yapılan hesap: '+signedAccount.username:'Hesap oturumu bulunamadı';
-    $('zlPassPanel').hidden=true;$('zlPassMessage').textContent='';
     pr.hidden=false;
   });
   $('profName').addEventListener('input',function(){var v=this.value.replace(/[^\p{L}\p{N} _.-]/gu,'').slice(0,14);$('nm').value=v;try{localStorage.setItem('zlName',v);}catch(e){}});
@@ -12659,12 +12659,8 @@ function refreshStoryInfo(){
 $('storyBtn').addEventListener('click',function(){getName();beginStory(storySaved());});
 $('storyNew').addEventListener('click',function(){getName();lsSet('zlStory','1');refreshStoryInfo();beginStory(1);});
 refreshStoryInfo();
-$('menuBtn').addEventListener('click',function(){
-  S.playing=false;S.firing=false;ambStop();closeShop();DLG.on=false;$('dlg').hidden=true;STORY.busy=false;$('sov').hidden=true;refreshStoryInfo();
-  if(document.exitPointerLock)document.exitPointerLock();
-  $('hud').hidden=true;$('menu').hidden=false;renderWardrobe();
-  if(room){room.presence({pl:0,n:S.name}).catch(function(){});renderRoster();}
-});
+function returnToMainMenu(){S.playing=false;S.firing=false;ambStop();closeShop();DLG.on=false;$('dlg').hidden=true;STORY.busy=false;$('sov').hidden=true;refreshStoryInfo();if(document.exitPointerLock)document.exitPointerLock();$('hud').hidden=true;$('menu').hidden=false;renderWardrobe();if(room){room.presence({pl:0,n:S.name}).catch(function(){});renderRoster();}}
+var menuActionAt=0;function menuActivate(){var n=Date.now();if(n-menuActionAt<350)return;menuActionAt=n;returnToMainMenu();}$('menuBtn').addEventListener('click',menuActivate);$('menuBtn').addEventListener('pointerdown',function(e){if(e.pointerType==='touch'){e.preventDefault();menuActivate();}});
 
 /* ===================== VS TAKIM MODU ===================== */
 var VSPICK={team:'blue',map:'vs_quarry'};
@@ -12792,7 +12788,7 @@ function vsMenuBuild(){
   $('menu').appendChild(m);
   $('zlVsMaps').style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;max-height:34vh;overflow:auto';
   var b=document.createElement('button');b.className='btn';b.id='zlVsBtn';b.type='button';b.style.cssText='margin-top:12px;width:100%';b.textContent='⚔️ VS Özel Maç';
-  var ref=$('armBtn');ref.parentNode.insertBefore(b,ref.nextSibling);
+  var ref=$('armBtn');if(ref&&ref.parentNode)ref.parentNode.insertBefore(b,ref.nextSibling);else $('menu').appendChild(b);
   function render(){
     $('zlVsBlue').className='btn'+(VSPICK.team==='blue'?' main':'');$('zlVsRed').className='btn'+(VSPICK.team==='red'?' main':'');
     var list=$('zlVsMaps');list.innerHTML='';MAPS.filter(function(q){return q.vsOnly;}).forEach(function(q){var card=document.createElement('button');card.type='button';card.className='mcard'+(VSPICK.map===q.id?' sel':'');var title=document.createElement('b'),desc=document.createElement('small');title.textContent=q.emoji+' '+q.name;desc.textContent=q.desc;card.appendChild(title);card.appendChild(desc);card.addEventListener('click',function(){VSPICK.map=q.id;render();});list.appendChild(card);});
@@ -12804,13 +12800,23 @@ function vsMenuBuild(){
   $('zlVsPlay').addEventListener('click',function(){
     getName();m.hidden=true;
     function launch(){
-      if(!room){say('VS için çok oyunculu oda açılamadı. Odaya girip tekrar dene; oda bağlantısı olmadan takım maçı çalışmaz.');m.hidden=false;return;}
-      var active=vsRoomPeer();VS.team=VSPICK.team;VS.map=active?active.mp:VSPICK.map;VS.active=false;VS.ended=false;VS.winner='';VS.readyT=0;VS.frags={};VS.deaths=0;VS.matchId=roomCode+'|'+VS.map;
-      begin('vs');toast('VS oda kodu: '+roomCode+' · '+(VS.team==='blue'?'MAVİ':'KIRMIZI')+' TAKIM');
+      /* Oda açılamasa bile seçilen VS arenasına gir. Oda varsa arkadaşlar bağlanabilir. */
+      var active=vsRoomPeer();VS.team=VSPICK.team;VS.map=active?active.mp:VSPICK.map;VS.active=false;VS.ended=false;VS.winner='';VS.readyT=0;VS.frags={};VS.deaths=0;
+      VS.matchId=(roomCode||'yerel')+'|'+VS.map;
+      try{
+        begin('vs');
+        if(!S.playing)throw new Error('Oyun durumu başlatılamadı');
+        if(room)toast('VS oda kodu: '+roomCode+' · '+(VS.team==='blue'?'MAVİ':'KIRMIZI')+' TAKIM');
+        else toast('VS haritası açıldı · Rakip oyuncu bekleniyor');
+      }catch(err){
+        console.error('Zombi Lab VS start error:',err);
+        say('VS maçı başlatılamadı: '+(err&&err.message?err.message:'bilinmeyen hata'));
+        m.hidden=false;
+      }
     }
     if(room){launch();return;}
-    if(!SET.open){say('Ayarlar bölümünden arkadaşların katılmasına izin ver veya önce oda koduyla odaya gir.');m.hidden=false;return;}
-    say('VS odası açılıyor…');autoRoom(launch);
+    if(SET.open){say('VS odası deneniyor…');autoRoom(launch);}
+    else launch();
   });
 }
 vsMenuBuild();
@@ -12876,128 +12882,5 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
 </script>
 
 
-<script>
-(async function () {
-  'use strict';
-  var gate = document.getElementById('zlAuthGate');
-  if (!gate) return;
-  var auth = window.ZombiAuth;
-  if (auth && auth.ready) await auth.ready;
-  if (!auth || !window.supabase) {
-    gate.hidden = false;
-    var failure = document.getElementById('zlAuthStatus');
-    var unavailable = document.getElementById('zlAuthSubmit');
-    if (failure) failure.textContent = 'Hesap sistemi başlatılamadı. Tarayıcı depolama iznini açıp sayfayı yenile.';
-    if (unavailable) unavailable.disabled = true;
-    return;
-  }
-
-  var form = document.getElementById('zlAuthForm');
-  var nameInput = document.getElementById('zlAuthName');
-  var passInput = document.getElementById('zlAuthPassword');
-  var confirmWrap = document.getElementById('zlAuthConfirmWrap');
-  var confirmInput = document.getElementById('zlAuthConfirm');
-  var submit = document.getElementById('zlAuthSubmit');
-  var switchButton = document.getElementById('zlAuthSwitch');
-  var switchText = document.getElementById('zlAuthSwitchText');
-  var subtitle = document.getElementById('zlAuthSubtitle');
-  var status = document.getElementById('zlAuthStatus');
-  var mode = 'register';
-
-  function setMode(next) {
-    mode = next;
-    var registering = mode === 'register';
-    confirmWrap.hidden = !registering;
-    confirmInput.required = registering;
-    passInput.autocomplete = registering ? 'new-password' : 'current-password';
-    submit.textContent = registering ? 'Hesap oluştur ve giriş yap' : 'Giriş yap';
-    subtitle.textContent = registering ? 'İlk defa mı geliyorsun? Önce kendi hesabını oluştur.' : 'Hesabına giriş yap, oyun kayıtların kaldığı yerden açılsın.';
-    switchText.textContent = registering ? 'Zaten hesabın var mı?' : 'İlk defa mı geliyorsun?';
-    switchButton.textContent = registering ? 'Giriş yap' : 'Hesap oluştur';
-    status.textContent = '';
-  }
-
-  if (auth.isSignedIn()) {
-    gate.hidden = true;
-    document.documentElement.classList.add('zl-authenticated');
-  } else {
-    gate.hidden = false;
-    document.documentElement.classList.remove('zl-authenticated');
-    setMode(mode);
-  }
-
-  switchButton.addEventListener('click', function () {
-    setMode(mode === 'login' ? 'register' : 'login');
-    passInput.value = '';
-    confirmInput.value = '';
-    nameInput.focus();
-  });
-
-  form.addEventListener('submit', async function (event) {
-    event.preventDefault();
-    var username = nameInput.value;
-    var password = passInput.value;
-    submit.disabled = true;
-    status.style.color = '#ffaaaa';
-    status.textContent = mode === 'register' ? 'Hesap oluşturuluyor…' : 'Giriş kontrol ediliyor…';
-    try {
-      if (mode === 'register') {
-        if (password !== confirmInput.value) throw new Error('İki şifre aynı değil.');
-        await auth.register(username, password);
-      } else {
-        await auth.login(username, password);
-      }
-      status.style.color = '#baff9f';
-      status.textContent = 'Tamam! Oyun hesabın açılıyor…';
-      window.location.reload();
-    } catch (error) {
-      status.style.color = '#ffaaaa';
-      status.textContent = error && error.message ? error.message : 'İşlem tamamlanamadı. Tekrar dene.';
-      submit.disabled = false;
-    }
-  });
-
-  var passToggle = document.getElementById('zlPassToggle');
-  var passPanel = document.getElementById('zlPassPanel');
-  var passSave = document.getElementById('zlPassSave');
-  var passMessage = document.getElementById('zlPassMessage');
-  if (passToggle && passPanel && passSave) {
-    passToggle.addEventListener('click', function () {
-      passPanel.hidden = !passPanel.hidden;
-      passMessage.textContent = '';
-      if (!passPanel.hidden) document.getElementById('zlPassCurrent').focus();
-    });
-    passSave.addEventListener('click', async function () {
-      var current = document.getElementById('zlPassCurrent').value;
-      var next = document.getElementById('zlPassNew').value;
-      var confirm = document.getElementById('zlPassConfirm').value;
-      if (next !== confirm) { passMessage.style.color = '#ffaaaa'; passMessage.textContent = 'Yeni şifreler aynı değil.'; return; }
-      passSave.disabled = true;
-      passMessage.style.color = '#ffaaaa';
-      passMessage.textContent = 'Şifre güncelleniyor…';
-      try {
-        await auth.changePassword(current, next);
-        passMessage.style.color = '#baff9f';
-        passMessage.textContent = 'Şifren başarıyla değiştirildi.';
-        document.getElementById('zlPassCurrent').value = '';
-        document.getElementById('zlPassNew').value = '';
-        document.getElementById('zlPassConfirm').value = '';
-      } catch (error) {
-        passMessage.style.color = '#ffaaaa';
-        passMessage.textContent = error && error.message ? error.message : 'Şifre değiştirilemedi.';
-      } finally {
-        passSave.disabled = false;
-      }
-    });
-  }
-
-  var logout = document.getElementById('zlLogout');
-  if (logout) logout.addEventListener('click', function () {
-    if (!window.confirm('Hesabından çıkış yapmak istiyor musun?')) return;
-    auth.logout();
-    window.location.reload();
-  });
-})();
-</script>
 </body>
 </html>
