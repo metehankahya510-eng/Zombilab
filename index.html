@@ -9985,14 +9985,15 @@ function csTick(dt,now){
   csRadar();
   CS.hudT-=dt;if(CS.hudT<=0){CS.hudT=0.15;CS.hud.innerHTML=csHudText();CS.hud.hidden=false;CS.radar.hidden=false;}
 }
-function autoRoom(cb){
-  if(room||!SET.open||navigator.onLine===false){cb();return;}
-  var fin=false,tm=setTimeout(function(){if(!fin){fin=true;cb();}},3000),code=cleanCode(randCode());
+function autoRoom(cb,ms,force){
+  if(room||(!SET.open&&!force)||navigator.onLine===false){cb();return;}
+  VS.roomWait=true;
+  var fin=false,tm=setTimeout(function(){if(!fin){fin=true;VS.roomWait=false;cb();}},(ms||3000)),code=cleanCode(randCode());
   getRoomNS().then(function(ns){
     if(!ns)throw 0;
     return ns.join('z-'+code).then(function(rm){
       if(fin){try{rm.leave();}catch(e){}return;}
-      fin=true;clearTimeout(tm);
+      fin=true;clearTimeout(tm);VS.roomWait=false;
       room=rm;roomCode=code;
       rm.on('z',handlers.z,function(){});rm.on('hit',handlers.hit,function(){});rm.on('csu',handlers.csu,function(){});rm.on('vsst',handlers.vsst,function(){});rm.on('pv',handlers.pv,function(){});rm.on('pk',handlers.pk,function(){});rm.on('vsgo',handlers.vsgo,function(){});
       rm.onPeers(renderRoster,function(){});
@@ -10603,7 +10604,7 @@ function vsInit(){
   b.addEventListener('click',function(){vsMenuRender();m.hidden=false;});
   $('vsClose').addEventListener('click',function(){m.hidden=true;});
   $('vsGo').addEventListener('click',function(){m.hidden=true;getName();if(room){try{room.leave();}catch(e){}room=null;roomCode='';$('roster').hidden=true;}
-    autoRoom(function(){vsLobbyOpen();});});
+    VS.lobby.hidden=false;VS.dismissed=false;vsLobbyRender();autoRoom(function(){vsLobbyOpen();},20000,true);});
   $('vsStart').addEventListener('click',function(){lb.hidden=true;begin('vs');});
   $('vsLobClose').addEventListener('click',function(){lb.hidden=true;if(room){try{room.presence({vm:'',mp:MAPSEL}).catch(function(){});}catch(e){}}});
   setInterval(function(){if(!lb.hidden)vsLobbyRender();},1500);
@@ -10771,7 +10772,8 @@ function vsLobbyRender(){
   var body=$('vsLobBody');if(!body)return;body.innerHTML='';
   function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
   function btn(txt,fn,cls){var b=el('button','btn'+(cls?' '+cls:''),txt);b.type='button';b.addEventListener('click',fn);return b;}
-  body.appendChild(el('div','wnote','Oda kodu: '+(roomCode||'(kurulamadı — internet?)')+(host?' · Sen ev sahibisin (ayarları sen seçersin).':' · Ev sahibi başlatınca maç otomatik başlar.')));
+  if(!room){body.appendChild(el('div','wnote',VS.roomWait?'⏳ Oda kuruluyor… (internet bağlantısı gerekir, 20 sn\'ye kadar sürebilir)':'⚠️ Oda kurulamadı. İnternet bağlantını kontrol edip tekrar dene.'));body.appendChild(btn('🔄 Tekrar dene',function(){autoRoom(function(){vsLobbyOpen();},20000,true);vsLobbyRender();},'go'));return;}
+  body.appendChild(el('div','wnote','Oda kodu: '+roomCode+(host?' · Sen ev sahibisin (ayarları sen seçersin).':' · Ev sahibi başlatınca maç otomatik başlar.')));
   /* ayarlar */
   var set=el('div','vsl-set');
   [['bomb','💣 Standart (Spike)'],['rush','⚡ Spike Rush'],['dm','🔫 Ölüm Maçı']].forEach(function(m){var b=btn(m[1],function(){if(!host)return;VS.pickSub=m[0];vsLobbySync();vsLobbyRender();},VS.pickSub===m[0]?'go':'');if(!host)b.disabled=true;set.appendChild(b);});
