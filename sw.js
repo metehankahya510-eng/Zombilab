@@ -1,4 +1,3 @@
-/* Eski önbelleği temizler ve kendini kaldırır */
 self.addEventListener('install',function(){self.skipWaiting()});
 self.addEventListener('activate',function(e){e.waitUntil((async function(){
   var ks=await caches.keys();for(var i=0;i<ks.length;i++)await caches.delete(ks[i]);
